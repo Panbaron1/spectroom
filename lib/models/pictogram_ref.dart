@@ -11,6 +11,9 @@ enum PictogramKind {
   /// Mulberry Symbol asset name (no extension), under assets/pictograms/.
   mulberry,
 
+  /// AI-generated kawaii icon name (no extension), under assets/icons/.
+  asset,
+
   /// Absolute file path to a parent-supplied photo in the app docs dir.
   photo,
 }
@@ -23,6 +26,7 @@ class PictogramRef {
 
   const PictogramRef.emoji(this.value) : kind = PictogramKind.emoji;
   const PictogramRef.mulberry(this.value) : kind = PictogramKind.mulberry;
+  const PictogramRef.asset(this.value) : kind = PictogramKind.asset;
   const PictogramRef.photo(this.value) : kind = PictogramKind.photo;
 
   const PictogramRef._(this.kind, this.value);

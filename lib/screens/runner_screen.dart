@@ -581,7 +581,7 @@ class _CelebrationState extends State<_Celebration>
       vsync: this, duration: const Duration(milliseconds: 700))
     ..forward();
   late final AnimationController _confetti = AnimationController(
-      vsync: this, duration: const Duration(seconds: 3))
+      vsync: this, duration: const Duration(milliseconds: 2400))
     ..forward();
 
   @override
@@ -594,54 +594,59 @@ class _CelebrationState extends State<_Celebration>
   @override
   Widget build(BuildContext context) {
     return Stack(
-      alignment: Alignment.center,
+      fit: StackFit.expand,
       children: [
-        Positioned.fill(
-          child: AnimatedBuilder(
-            animation: _confetti,
-            builder: (context, _) =>
-                CustomPaint(painter: _ConfettiPainter(_confetti.value)),
-          ),
+        AnimatedBuilder(
+          animation: _confetti,
+          builder: (context, _) =>
+              CustomPaint(painter: _ConfettiPainter(_confetti.value)),
         ),
-        Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ScaleTransition(
-              scale: CurvedAnimation(parent: _pop, curve: Curves.elasticOut),
-              child: Container(
-                padding: const EdgeInsets.all(28),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                        color: widget.accent.withValues(alpha: 0.3),
-                        blurRadius: 30,
-                        offset: const Offset(0, 12)),
-                  ],
+        Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ScaleTransition(
+                scale: CurvedAnimation(parent: _pop, curve: Curves.elasticOut),
+                child: Container(
+                  padding: const EdgeInsets.all(28),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                          color: widget.accent.withValues(alpha: 0.35),
+                          blurRadius: 40,
+                          spreadRadius: 4,
+                          offset: const Offset(0, 8)),
+                    ],
+                  ),
+                  child: PictogramView(
+                      const PictogramRef.asset('star'), size: 120),
                 ),
-                child: PictogramView(
-                    const PictogramRef.mulberry('star'), size: 120),
               ),
-            ),
-            const SizedBox(height: 24),
-            const Text('Hotovo!',
-                style: TextStyle(
-                    fontSize: 42,
-                    fontWeight: FontWeight.w800,
-                    color: Palette.ink)),
-            const SizedBox(height: 6),
-            const Text('All done!',
-                style: TextStyle(fontSize: 22, color: Palette.inkSoft)),
-            const SizedBox(height: 36),
-            FilledButton(
-              onPressed: widget.onDone,
-              style: FilledButton.styleFrom(
-                  backgroundColor: widget.accent,
-                  minimumSize: const Size(200, 60)),
-              child: const Text('Zpět'),
-            ),
-          ],
+              const SizedBox(height: 28),
+              ShaderMask(
+                shaderCallback: (r) => Spectrum.brand.createShader(r),
+                child: const Text('Hotovo!',
+                    style: TextStyle(
+                        fontFamily: 'Geist',
+                        fontSize: 48,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white)),
+              ),
+              const SizedBox(height: 6),
+              const Text('All done!',
+                  style: TextStyle(fontSize: 22, color: Palette.inkSoft)),
+              const SizedBox(height: 40),
+              FilledButton(
+                onPressed: widget.onDone,
+                style: FilledButton.styleFrom(
+                    backgroundColor: widget.accent,
+                    minimumSize: const Size(200, 60)),
+                child: const Text('Zpět'),
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -651,39 +656,59 @@ class _CelebrationState extends State<_Celebration>
 class _ConfettiPainter extends CustomPainter {
   final double t; // 0 → 1
   _ConfettiPainter(this.t);
-  static final _rnd = math.Random(7);
-  static final _bits = List.generate(
-      40,
-      (i) => (
-            x: _rnd.nextDouble(),
-            delay: _rnd.nextDouble() * 0.4,
-            hue: _rnd.nextInt(5),
-            size: 6.0 + _rnd.nextDouble() * 8,
-          ));
+
+  static final _rnd = math.Random(42);
+  static final _particles = List.generate(
+    90,
+    (i) => (
+      angle: _rnd.nextDouble() * 2 * math.pi,
+      speed: 0.25 + _rnd.nextDouble() * 0.75,
+      delay: _rnd.nextDouble() * 0.12,
+      colorIdx: _rnd.nextInt(5),
+      size: 5.0 + _rnd.nextDouble() * 10,
+      spin: (_rnd.nextDouble() - 0.5) * 8,
+    ),
+  );
+
   static const _colors = [
-    Palette.teal,
-    Palette.lavender,
-    Palette.peach,
-    Color(0xFFF6C95C),
-    Color(0xFF8FC6E8),
+    Spectrum.coral,
+    Spectrum.amber,
+    Spectrum.mint,
+    Spectrum.sky,
+    Spectrum.lavender,
   ];
 
   @override
   void paint(Canvas canvas, Size size) {
-    for (final b in _bits) {
-      final p = ((t - b.delay) / (1 - b.delay)).clamp(0.0, 1.0);
-      if (p <= 0) continue;
-      final dx = b.x * size.width;
-      final dy = -20 + p * (size.height + 40);
-      final paint = Paint()
-        ..color = _colors[b.hue].withValues(alpha: (1 - p).clamp(0.0, 1.0));
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+    final maxDist = math.sqrt(cx * cx + cy * cy) * 0.95;
+
+    for (final p in _particles) {
+      final raw = ((t - p.delay) / (1 - p.delay)).clamp(0.0, 1.0);
+      if (raw <= 0) continue;
+      // cubic ease-out: fast burst, settle
+      final eased = 1 - math.pow(1 - raw, 3).toDouble();
+      final dist = eased * maxDist * p.speed;
+      final dx = cx + math.cos(p.angle) * dist;
+      final dy = cy + math.sin(p.angle) * dist + eased * 50; // gentle gravity
+      // fade out in final 35%
+      final alpha = raw < 0.65
+          ? 1.0
+          : (1 - (raw - 0.65) / 0.35).clamp(0.0, 1.0);
+
+      canvas.save();
+      canvas.translate(dx, dy);
+      canvas.rotate(p.spin * raw);
       canvas.drawRRect(
         RRect.fromRectAndRadius(
-            Rect.fromCenter(
-                center: Offset(dx, dy), width: b.size, height: b.size * 0.6),
-            const Radius.circular(2)),
-        paint,
+          Rect.fromCenter(
+              center: Offset.zero, width: p.size, height: p.size * 0.5),
+          const Radius.circular(2),
+        ),
+        Paint()..color = _colors[p.colorIdx].withValues(alpha: alpha),
       );
+      canvas.restore();
     }
   }
 

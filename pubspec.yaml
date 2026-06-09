@@ -67,6 +67,7 @@ flutter:
 
   assets:
     - assets/pictograms/   # Mulberry Symbols (CC BY-SA) - commercial-safe
+    - assets/icons/        # AI-generated kawaii icon set
 
   fonts:
     - family: Geist         # clean, modern, Linear-style — UI + display

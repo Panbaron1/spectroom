@@ -28,6 +28,15 @@ class PictogramView extends StatelessWidget {
           placeholderBuilder: (_) => _fallback(size, Icons.image_outlined),
         );
 
+      case PictogramKind.asset:
+        return Image.asset(
+          'assets/icons/${ref.value}.png',
+          width: size,
+          height: size,
+          fit: BoxFit.contain,
+          errorBuilder: (_, e, s) => _fallback(size, Icons.image_outlined),
+        );
+
       case PictogramKind.photo:
         final f = File(ref.value);
         return ClipRRect(
