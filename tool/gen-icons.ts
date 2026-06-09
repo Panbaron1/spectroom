@@ -55,6 +55,9 @@ const ICONS: Record<string, [string, string]> = {
   door:          ['Kawaii friendly door slightly ajar, cute face, simple rounded rectangle. Sky blue #93C2E6 filled.', '#93C2E6'],
   syringe:       ['Kawaii friendly medical syringe with big cute smiling face on barrel, round cap, very friendly not scary. Coral #EFA79E filled barrel. White background.', '#EFA79E'],
   plaster:       ['Kawaii band-aid / plaster with cute smiling face, rounded rectangle shape with two stripe lines across centre. Coral #EFA79E filled. White background.', '#EFA79E'],
+  // ── mealtime ─────────────────────────────────────────────────
+  plate:         ['Kawaii dinner plate with a cute smiling face, simple food on top (a few dots or small shapes suggesting food). Amber #F1C889 plate rim, white center. White background.', '#F1C889'],
+  fork:          ['Kawaii fork and spoon crossed together, cute smiling face on the handles. Amber #F1C889 filled. White background.', '#F1C889'],
   // ── handwash ─────────────────────────────────────────────────
   faucet:        ['Kawaii bathroom tap / faucet with water flowing out, cute smiling face on the spout. Sky blue #93C2E6 filled. White background.', '#93C2E6'],
   towel:         ['Kawaii hand towel folded or hanging, cute smiling face on the fabric. Mint green #8FD3B6 filled. White background.', '#8FD3B6'],

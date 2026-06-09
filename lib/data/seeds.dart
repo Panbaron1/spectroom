@@ -85,6 +85,20 @@ final List<Challenge> seedChallenges = [
     ],
   ),
   Challenge(
+    id: 'seed.mealtime',
+    titleCs: 'Jídlo',
+    titleEn: 'Meal time',
+    category: ChallengeCategory.routine,
+    cover: const PictogramRef.asset('plate'),
+    steps: [
+      const ChallengeStep(id: 'mealtime.1', kind: StepKind.info, pictogram: PictogramRef.asset('faucet'), labelCs: 'Umyjeme si ruce', labelEn: 'Wash hands'),
+      const ChallengeStep(id: 'mealtime.2', kind: StepKind.info, pictogram: PictogramRef.asset('sit'), labelCs: 'Sedneme si ke stolu', labelEn: 'Sit at the table'),
+      const ChallengeStep(id: 'mealtime.3', kind: StepKind.info, pictogram: PictogramRef.asset('plate'), labelCs: 'Jídlo na stole', labelEn: 'Food is ready'),
+      const ChallengeStep(id: 'mealtime.4', kind: StepKind.timer, pictogram: PictogramRef.asset('fork'), labelCs: 'Jíme', labelEn: 'Eating time', durationSec: 600),
+      const ChallengeStep(id: 'mealtime.5', kind: StepKind.info, pictogram: PictogramRef.asset('rinse'), labelCs: 'Napijeme se', labelEn: 'Have a drink'),
+    ],
+  ),
+  Challenge(
     id: 'seed.handwash',
     titleCs: 'Mytí rukou',
     titleEn: 'Wash hands',
