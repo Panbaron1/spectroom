@@ -632,6 +632,7 @@ class _PictogramPicker extends StatelessWidget {
   });
 
   Future<void> _pick(BuildContext context) async {
+    final lang = LangStore.instance.lang;
     final choice = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: Spectrum.surface,
@@ -643,10 +644,10 @@ class _PictogramPicker extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Padding(
-              padding: EdgeInsets.only(bottom: 4),
-              child: Text('Vyber obrázek',
-                  style: TextStyle(
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Text(lang == 'en' ? 'Choose picture' : 'Vyber obrázek',
+                  style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600)),
             ),
@@ -665,13 +666,13 @@ class _PictogramPicker extends StatelessWidget {
             ListTile(
                 leading:
                     const Icon(Icons.photo_camera_outlined),
-                title: const Text('Vyfotit'),
+                title: Text(lang == 'en' ? 'Take photo' : 'Vyfotit'),
                 onTap: () =>
                     Navigator.pop(ctx, 'camera')),
             ListTile(
                 leading:
                     const Icon(Icons.photo_library_outlined),
-                title: const Text('Z galerie'),
+                title: Text(lang == 'en' ? 'From gallery' : 'Z galerie'),
                 onTap: () =>
                     Navigator.pop(ctx, 'gallery')),
           ],
@@ -719,10 +720,11 @@ class _PictogramPicker extends StatelessWidget {
 
   Future<String?> _askEmoji(BuildContext context) {
     final ctrl = TextEditingController();
+    final lang = LangStore.instance.lang;
     return showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Zadej emoji'),
+        title: Text(lang == 'en' ? 'Enter emoji' : 'Zadej emoji'),
         content: TextField(
           controller: ctrl,
           autofocus: true,
@@ -732,7 +734,7 @@ class _PictogramPicker extends StatelessWidget {
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Zrušit')),
+              child: Text(lang == 'en' ? 'Cancel' : 'Zrušit')),
           FilledButton(
               onPressed: () =>
                   Navigator.pop(ctx, ctrl.text.trim()),
@@ -809,8 +811,10 @@ class _SymbolPickerScreenState
         : _all
             .where((s) => s.contains(_query.toLowerCase()))
             .toList();
+    final lang = LangStore.instance.lang;
     return Scaffold(
-      appBar: AppBar(title: const Text('Vyber symbol')),
+      appBar: AppBar(
+          title: Text(lang == 'en' ? 'Choose symbol' : 'Vyber symbol')),
       body: Column(
         children: [
           Padding(
@@ -818,10 +822,11 @@ class _SymbolPickerScreenState
                 const EdgeInsets.fromLTRB(16, 0, 16, 8),
             child: TextField(
               autofocus: true,
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.search_rounded),
-                hintText:
-                    'Hledat (anglicky): tooth, sock, door…',
+              decoration: InputDecoration(
+                prefixIcon: const Icon(Icons.search_rounded),
+                hintText: lang == 'en'
+                    ? 'Search: tooth, sock, door…'
+                    : 'Hledat (anglicky): tooth, sock, door…',
               ),
               onChanged: (v) =>
                   setState(() => _query = v.trim()),

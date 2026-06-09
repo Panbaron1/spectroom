@@ -19,21 +19,21 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final store = ChallengeStore.instance;
-    return Scaffold(
+    return AnimatedBuilder(
+      animation: Listenable.merge([store, LangStore.instance]),
+      builder: (context, _) {
+        final items = store.all;
+        final lang = LangStore.instance.lang;
+        return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openBuilder(context, null),
         backgroundColor: Spectrum.ink,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add_rounded),
-        label: const Text('Nová výzva',
-            style: TextStyle(fontWeight: FontWeight.w600)),
+        label: Text(lang == 'en' ? 'New challenge' : 'Nová výzva',
+            style: const TextStyle(fontWeight: FontWeight.w600)),
       ),
-      body: AnimatedBuilder(
-        animation: Listenable.merge([store, LangStore.instance]),
-        builder: (context, _) {
-          final items = store.all;
-          final lang = LangStore.instance.lang;
-          return CustomScrollView(
+      body: CustomScrollView(
             slivers: [
               SliverToBoxAdapter(
                 child: SafeArea(
@@ -60,8 +60,10 @@ class HomeScreen extends StatelessWidget {
                                         color: Colors.white)),
                               ),
                               const SizedBox(height: 4),
-                              const Text('Klidně si projdi, co nás čeká.',
-                                  style: TextStyle(
+                              Text(lang == 'en'
+                                  ? 'Walk through what\'s coming.'
+                                  : 'Klidně si projdi, co nás čeká.',
+                                  style: const TextStyle(
                                       fontSize: 15, color: Spectrum.inkSoft)),
                             ],
                           ),
@@ -93,9 +95,9 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ],
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -159,7 +161,9 @@ class _ChallengeCard extends StatelessWidget {
                           color: accent, shape: BoxShape.circle),
                     ),
                     const SizedBox(width: 6),
-                    Text('${challenge.steps.length} kroků',
+                    Text(lang == 'en'
+                        ? '${challenge.steps.length} steps'
+                        : '${challenge.steps.length} kroků',
                         style: const TextStyle(
                             fontSize: 13, color: Spectrum.inkSoft)),
                   ],
