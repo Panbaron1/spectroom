@@ -4,6 +4,36 @@ import 'package:flutter/services.dart';
 import 'design/spectrum.dart';
 import 'models/challenge.dart';
 
+class Breakpoints {
+  static int gridColumns(double width) {
+    if (width >= 900) return 4;
+    if (width >= 600) return 3;
+    return 2;
+  }
+
+  static const double maxContentWidth = 640;
+}
+
+/// Centers and constrains content to [Breakpoints.maxContentWidth] on wide
+/// screens by adding symmetric horizontal padding. On narrow screens returns
+/// [child] unchanged. Uses [Padding] so tight height constraints are preserved
+/// — [Expanded] children continue to work correctly inside.
+class ContentBox extends StatelessWidget {
+  final Widget child;
+  const ContentBox({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final w = MediaQuery.sizeOf(context).width;
+    const max = Breakpoints.maxContentWidth;
+    if (w <= max) return child;
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: (w - max) / 2),
+      child: child,
+    );
+  }
+}
+
 /// Back-compat palette facade — existing screens reference Palette.*, now backed
 /// by the Spectrum brand. New work should use Spectrum directly.
 class Palette {

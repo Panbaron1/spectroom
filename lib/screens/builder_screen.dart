@@ -137,7 +137,8 @@ class _BuilderScreenState extends State<BuilderScreen> {
           ),
         ],
       ),
-      body: ListView(
+      body: ContentBox(
+        child: ListView(
         padding:
             const EdgeInsets.fromLTRB(Gap.md, Gap.sm, Gap.md, 120),
         children: [
@@ -272,6 +273,7 @@ class _BuilderScreenState extends State<BuilderScreen> {
             ),
           ),
         ],
+        ),
       ),
     );
   }

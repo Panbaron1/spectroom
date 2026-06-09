@@ -87,7 +87,8 @@ class _RunnerScreenState extends State<RunnerScreen> {
         title: Text(widget.challenge.title(LangStore.instance.lang)),
       ),
       body: SafeArea(
-        child: widget.live
+        child: ContentBox(
+          child: widget.live
             ? Column(
                 children: [
                   // Soft step progress as a row of dots
@@ -152,6 +153,7 @@ class _RunnerScreenState extends State<RunnerScreen> {
                   ),
                 ),
               ),
+        ),
       ),
     );
   }

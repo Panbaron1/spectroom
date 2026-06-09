@@ -82,8 +82,9 @@ class HomeScreen extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(Gap.md, 0, Gap.md, 110),
                 sliver: SliverGrid(
                   gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
+                      SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: Breakpoints.gridColumns(
+                        MediaQuery.sizeOf(context).width),
                     mainAxisSpacing: Gap.md,
                     crossAxisSpacing: Gap.md,
                     childAspectRatio: 0.84,

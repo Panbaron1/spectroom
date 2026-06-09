@@ -83,7 +83,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         children: [
           const Positioned.fill(child: SpectrumMesh(intensity: 0.55)),
           SafeArea(
-            child: Column(
+            child: ContentBox(
+              child: Column(
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 10, 8, 0),
@@ -160,6 +161,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                 ),
               ],
+            ),
             ),
           ),
         ],
