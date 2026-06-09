@@ -23,15 +23,11 @@ class AudioService {
   }
 
   Future<void> playVoice(String path) async {
-    try {
-      await _voice.stop();
-      await _voice.play(DeviceFileSource(path));
-    } catch (_) {}
+    try { await _voice.stop(); } catch (_) {}
+    try { await _voice.play(DeviceFileSource(path)); } catch (_) {}
   }
 
   Future<void> stopVoice() async {
-    try {
-      await _voice.stop();
-    } catch (_) {}
+    try { await _voice.stop(); } catch (_) {}
   }
 }

@@ -51,9 +51,10 @@ class _RunnerScreenState extends State<RunnerScreen> {
   void _playStepAudio(int index) {
     if (index >= widget.challenge.steps.length) return;
     final audio = widget.challenge.steps[index].audioPath;
-    AudioService.instance.stopVoice();
     if (audio != null && audio.isNotEmpty) {
       AudioService.instance.playVoice(audio);
+    } else {
+      AudioService.instance.stopVoice();
     }
   }
 
