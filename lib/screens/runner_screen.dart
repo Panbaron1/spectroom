@@ -86,58 +86,71 @@ class _RunnerScreenState extends State<RunnerScreen> {
         title: Text(widget.challenge.title(LangStore.instance.lang)),
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            // Soft step progress as a row of dots
-            if (!_atEnd)
-              Padding(
-                padding: const EdgeInsets.only(top: 4, bottom: 8),
-                child: _DotProgress(
-                    total: steps.length, current: _index, color: _accent),
-              ),
-            Expanded(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: _atEnd
-                    ? _Celebration(
-                        key: const ValueKey('end'),
-                        accent: _accent,
-                        onDone: () => Navigator.pop(context))
-                    : _StepView(
-                        key: ValueKey('${widget.live}-$_index'),
-                        step: steps[_index],
-                        live: widget.live,
-                        accent: _accent,
-                        onComplete: _next,
-                      ),
-              ),
-            ),
-            if (!_atEnd)
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    IconButton.filledTonal(
-                      onPressed: _index == 0 ? null : _back,
-                      icon: const Icon(Icons.arrow_back_rounded),
-                      iconSize: 28,
+        child: widget.live
+            ? Column(
+                children: [
+                  // Soft step progress as a row of dots
+                  if (!_atEnd)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4, bottom: 8),
+                      child: _DotProgress(
+                          total: steps.length, current: _index, color: _accent),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: FilledButton.icon(
-                        onPressed: _next,
-                        style: FilledButton.styleFrom(
-                            backgroundColor: _accent,
-                            minimumSize: const Size.fromHeight(60)),
-                        icon: const Icon(Icons.arrow_forward_rounded),
-                        label: Text(LangStore.instance.lang == 'en' ? 'Next' : 'Další'),
+                  Expanded(
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      child: _atEnd
+                          ? _Celebration(
+                              key: const ValueKey('end'),
+                              accent: _accent,
+                              onDone: () => Navigator.pop(context))
+                          : _StepView(
+                              key: ValueKey('${widget.live}-$_index'),
+                              step: steps[_index],
+                              live: widget.live,
+                              accent: _accent,
+                              onComplete: _next,
+                            ),
+                    ),
+                  ),
+                  if (!_atEnd)
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          IconButton.filledTonal(
+                            onPressed: _index == 0 ? null : _back,
+                            icon: const Icon(Icons.arrow_back_rounded),
+                            iconSize: 28,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: FilledButton.icon(
+                              onPressed: _next,
+                              style: FilledButton.styleFrom(
+                                  backgroundColor: _accent,
+                                  minimumSize: const Size.fromHeight(60)),
+                              icon: const Icon(Icons.arrow_forward_rounded),
+                              label: Text(LangStore.instance.lang == 'en' ? 'Next' : 'Další'),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
+                ],
+              )
+            : _ScheduleStrip(
+                challenge: widget.challenge,
+                accent: _accent,
+                lang: LangStore.instance.lang,
+                onStart: () => Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        RunnerScreen(challenge: widget.challenge, live: true),
+                  ),
                 ),
               ),
-          ],
-        ),
       ),
     );
   }
@@ -757,4 +770,175 @@ class _ConfettiPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_ConfettiPainter old) => old.t != t;
+}
+
+// ── Schedule strip (rehearsal mode) ─────────────────────────
+class _ScheduleStrip extends StatelessWidget {
+  final Challenge challenge;
+  final Color accent;
+  final String lang;
+  final VoidCallback onStart;
+  const _ScheduleStrip({
+    required this.challenge,
+    required this.accent,
+    required this.lang,
+    required this.onStart,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final steps = challenge.steps;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+          child: Text(
+            lang == 'en' ? "Here's what happens:" : 'Co nás čeká:',
+            style: const TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: Palette.ink,
+            ),
+          ),
+        ),
+        Expanded(
+          child: ListView.separated(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+            itemCount: steps.length,
+            separatorBuilder: (_, _) => const SizedBox(height: 8),
+            itemBuilder: (_, i) => _StripTile(
+              step: steps[i],
+              index: i,
+              accent: accent,
+              lang: lang,
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          child: FilledButton.icon(
+            onPressed: onStart,
+            style: FilledButton.styleFrom(
+              backgroundColor: accent,
+              minimumSize: const Size.fromHeight(60),
+            ),
+            icon: const Icon(Icons.play_arrow_rounded),
+            label: Text(
+              lang == 'en' ? "Let's do it!" : 'Jdeme na to!',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StripTile extends StatelessWidget {
+  final ChallengeStep step;
+  final int index;
+  final Color accent;
+  final String lang;
+  const _StripTile({
+    required this.step,
+    required this.index,
+    required this.accent,
+    required this.lang,
+  });
+
+  String _fmtDur(int s) {
+    if (s < 60) return '${s}s';
+    final m = s ~/ 60;
+    final r = s % 60;
+    return r > 0 ? '${m}m ${r}s' : '${m}m';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final (String chipLabel, Color chipColor) = switch (step.kind) {
+      StepKind.info => (
+          lang == 'en' ? 'Picture' : 'Obrázek',
+          Spectrum.sky,
+        ),
+      StepKind.countdown => (
+          '×${step.count ?? '?'}',
+          Spectrum.amber,
+        ),
+      StepKind.timer => (
+          step.durationSec != null ? _fmtDur(step.durationSec!) : '⏱',
+          Spectrum.mint,
+        ),
+    };
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Spectrum.ink.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        children: [
+          Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: accent.withValues(alpha: 0.15),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              '${index + 1}',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: accent,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          _PictoHero(ref: step.pictogram, size: 56),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  step.label(lang),
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Palette.ink,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: chipColor.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: Text(
+                    chipLabel,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: chipColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

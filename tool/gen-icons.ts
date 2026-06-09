@@ -53,6 +53,15 @@ const ICONS: Record<string, [string, string]> = {
   stethoscope:   ['Kawaii stethoscope in a circle shape, cute face. Lavender #BCACE4 filled.', '#BCACE4'],
   stickers:      ['Kawaii sticker sheet with small star and heart stickers, cute face. Coral #EFA79E.', '#EFA79E'],
   door:          ['Kawaii friendly door slightly ajar, cute face, simple rounded rectangle. Sky blue #93C2E6 filled.', '#93C2E6'],
+  syringe:       ['Kawaii friendly medical syringe with big cute smiling face on barrel, round cap, very friendly not scary. Coral #EFA79E filled barrel. White background.', '#EFA79E'],
+  plaster:       ['Kawaii band-aid / plaster with cute smiling face, rounded rectangle shape with two stripe lines across centre. Coral #EFA79E filled. White background.', '#EFA79E'],
+  // ── bath ────────────────────────────────────────────────────
+  bathtub:       ['Kawaii bathtub with round feet, big bubbles floating above, cute smiling face on the tub body. Sky blue #93C2E6 filled tub, white bubbles. White background.', '#93C2E6'],
+  soap:          ['Kawaii bar of soap with foamy bubbles around it, cute smiling face on the bar. Mint green #8FD3B6 filled bar, white foam. White background.', '#8FD3B6'],
+  // ── bedtime ─────────────────────────────────────────────────
+  pajamas:       ['Kawaii pyjama top folded neatly with small stars or moons pattern, cute face on the fabric. Lavender #BCACE4 filled. White background.', '#BCACE4'],
+  moon:          ['Kawaii crescent moon with big cute sleepy face (half-closed eyes), small stars around it. Amber #F1C889 filled moon. White background.', '#F1C889'],
+  book:          ['Kawaii open book with cute smiling face on the cover, colorful pages visible. Sky blue #93C2E6 filled cover. White background.', '#93C2E6'],
   // ── universal ───────────────────────────────────────────────
   star:          ['Kawaii rounded five-pointed star with cute smiling face. Amber #F1C889 filled. White background.', '#F1C889'],
   finish:        ['Kawaii green checkmark or trophy cup with cute face. Mint green #8FD3B6 filled. White background.', '#8FD3B6'],

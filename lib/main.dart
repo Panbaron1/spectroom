@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'data/challenge_store.dart';
+import 'data/lang_store.dart';
 import 'data/prefs.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
@@ -8,7 +9,10 @@ import 'theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await ChallengeStore.instance.load();
+  await Future.wait([
+    ChallengeStore.instance.load(),
+    LangStore.instance.load(),
+  ]);
   final seen = await Prefs.seenOnboarding();
   runApp(SpectroomApp(showOnboarding: !seen));
 }
