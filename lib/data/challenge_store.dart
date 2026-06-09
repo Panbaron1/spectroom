@@ -17,8 +17,14 @@ class ChallengeStore extends ChangeNotifier {
   final List<Challenge> _custom = [];
   bool _loaded = false;
 
-  /// Seeds first, then parent-created.
-  List<Challenge> get all => [...seedChallenges, ..._custom];
+  /// Seeds first, then parent-created (seeds win on ID clash).
+  List<Challenge> get all {
+    final seedIds = seedChallenges.map((c) => c.id).toSet();
+    return [
+      ...seedChallenges,
+      ..._custom.where((c) => !seedIds.contains(c.id)),
+    ];
+  }
 
   Future<File> _file() async {
     final dir = await getApplicationDocumentsDirectory();

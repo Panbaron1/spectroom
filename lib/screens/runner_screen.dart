@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../data/lang_store.dart';
 import '../design/spectrum.dart';
 import '../models/challenge.dart';
 import '../models/pictogram_ref.dart';
@@ -51,7 +52,7 @@ class _RunnerScreenState extends State<RunnerScreen> {
           Color.alphaBlend(_tint.withValues(alpha: 0.55), Spectrum.bg),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: Text(widget.challenge.titleCs),
+        title: Text(widget.challenge.title(LangStore.instance.lang)),
       ),
       body: SafeArea(
         child: Column(
@@ -98,7 +99,7 @@ class _RunnerScreenState extends State<RunnerScreen> {
                             backgroundColor: _accent,
                             minimumSize: const Size.fromHeight(60)),
                         icon: const Icon(Icons.arrow_forward_rounded),
-                        label: const Text('Další'),
+                        label: Text(LangStore.instance.lang == 'en' ? 'Next' : 'Další'),
                       ),
                     ),
                   ],
@@ -152,22 +153,12 @@ class _StepView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(step.labelCs,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.w800,
-                color: Palette.ink)),
-        if (step.labelEn.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Text(step.labelEn,
-                style: const TextStyle(fontSize: 18, color: Palette.inkSoft)),
-          ),
-      ],
+    final lang = LangStore.instance.lang;
+    final label = Text(
+      step.label(lang),
+      textAlign: TextAlign.center,
+      style: const TextStyle(
+          fontSize: 30, fontWeight: FontWeight.w800, color: Palette.ink),
     );
 
     Widget hero;
@@ -182,12 +173,20 @@ class _StepView extends StatelessWidget {
             : _CountdownPreview(count: step.count ?? 1, accent: accent);
         break;
       case StepKind.timer:
-        hero = live
+        final timerWidget = live
             ? _TimerRunner(
                 seconds: step.durationSec ?? 30,
                 accent: accent,
                 onDone: onComplete)
             : _TimerPreview(seconds: step.durationSec ?? 30, accent: accent);
+        hero = Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _PictoHero(ref: step.pictogram, size: 100),
+            const SizedBox(height: 20),
+            timerWidget,
+          ],
+        );
         break;
     }
 
@@ -208,14 +207,17 @@ class _StepView extends StatelessWidget {
 
 class _PictoHero extends StatelessWidget {
   final PictogramRef ref;
-  const _PictoHero({required this.ref});
+  final double size;
+  const _PictoHero({required this.ref, this.size = 200});
   @override
   Widget build(BuildContext context) {
+    final pad = size * 0.14;
+    final radius = size * 0.22;
     return Container(
-      padding: const EdgeInsets.all(28),
+      padding: EdgeInsets.all(pad),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(40),
+        borderRadius: BorderRadius.circular(radius),
         boxShadow: [
           BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),
@@ -223,7 +225,7 @@ class _PictoHero extends StatelessWidget {
               offset: const Offset(0, 8)),
         ],
       ),
-      child: PictogramView(ref, size: 200),
+      child: PictogramView(ref, size: size),
     );
   }
 }
@@ -316,7 +318,10 @@ class _CountdownTapperState extends State<_CountdownTapper>
         const SizedBox(height: 28),
         _Pips(total: widget.start, remaining: _n, color: widget.accent),
         const SizedBox(height: 8),
-        Text('Klepni na kruh', style: TextStyle(color: Palette.inkSoft, fontSize: 15)),
+        Text(
+          LangStore.instance.lang == 'en' ? 'Tap the circle' : 'Klepni na kruh',
+          style: TextStyle(color: Palette.inkSoft, fontSize: 15),
+        ),
       ],
     );
   }
@@ -627,23 +632,21 @@ class _CelebrationState extends State<_Celebration>
               const SizedBox(height: 28),
               ShaderMask(
                 shaderCallback: (r) => Spectrum.brand.createShader(r),
-                child: const Text('Hotovo!',
-                    style: TextStyle(
+                child: Text(
+                    LangStore.instance.lang == 'en' ? 'All done!' : 'Hotovo!',
+                    style: const TextStyle(
                         fontFamily: 'Geist',
                         fontSize: 48,
                         fontWeight: FontWeight.w800,
                         color: Colors.white)),
               ),
-              const SizedBox(height: 6),
-              const Text('All done!',
-                  style: TextStyle(fontSize: 22, color: Palette.inkSoft)),
               const SizedBox(height: 40),
               FilledButton(
                 onPressed: widget.onDone,
                 style: FilledButton.styleFrom(
                     backgroundColor: widget.accent,
                     minimumSize: const Size(200, 60)),
-                child: const Text('Zpět'),
+                child: Text(LangStore.instance.lang == 'en' ? 'Back' : 'Zpět'),
               ),
             ],
           ),
