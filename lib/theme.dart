@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'design/spectrum.dart';
 import 'models/challenge.dart';
@@ -54,6 +55,11 @@ ThemeData buildSpectroomTheme() {
       foregroundColor: Spectrum.ink,
       centerTitle: true,
       elevation: 0,
+      systemOverlayStyle: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
+      ),
       titleTextStyle: TextStyle(
         fontFamily: 'Geist',
         fontSize: 20,
