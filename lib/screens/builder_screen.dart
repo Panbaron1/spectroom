@@ -67,7 +67,7 @@ class _BuilderScreenState extends State<BuilderScreen> {
     final challenge = Challenge(
       id: _id,
       titleCs: t,
-      titleEn: t,
+      titleEn: widget.existing?.titleEn ?? t,
       category: _category,
       cover: _cover,
       steps: _steps.map((s) => s.toStep()).toList(),

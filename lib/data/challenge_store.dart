@@ -23,7 +23,15 @@ class ChallengeStore extends ChangeNotifier {
   List<Challenge> get all {
     final customById = Map.fromEntries(_custom.map((c) => MapEntry(c.id, c)));
     return [
-      ...seedChallenges.map((s) => customById[s.id] ?? s),
+      ...seedChallenges.map((s) {
+        final c = customById[s.id];
+        if (c == null) return s;
+        // Heal: builder bug wrote titleEn = titleCs; restore seed's English title
+        if (c.titleEn == c.titleCs && s.titleEn != s.titleCs) {
+          return c.copyWith(titleEn: s.titleEn);
+        }
+        return c;
+      }),
       ..._custom.where((c) => !seedChallenges.any((s) => s.id == c.id)),
     ];
   }
