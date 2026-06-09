@@ -40,7 +40,7 @@ class _BuilderScreenState extends State<BuilderScreen> {
     _id = e?.id ?? 'custom.${_uuid.v4()}';
     _title = TextEditingController(text: e?.titleCs ?? '');
     _category = e?.category ?? ChallengeCategory.routine;
-    _cover = e?.cover ?? const PictogramRef.mulberry('star');
+    _cover = e?.cover ?? const PictogramRef.asset('star');
     _steps = (e?.steps ?? <ChallengeStep>[]).map(_StepDraft.from).toList();
     if (_steps.isEmpty) _steps.add(_StepDraft.blank());
   }
@@ -746,15 +746,35 @@ class _PictogramPicker extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => _pick(context),
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: tint,
-          borderRadius: BorderRadius.circular(Radii.md),
-        ),
-        alignment: Alignment.center,
-        child: PictogramView(value, size: size * 0.68),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              color: tint,
+              borderRadius: BorderRadius.circular(Radii.md),
+            ),
+            alignment: Alignment.center,
+            child: PictogramView(value, size: size * 0.68),
+          ),
+          Positioned(
+            right: -4,
+            bottom: -4,
+            child: Container(
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                color: Spectrum.ink,
+                shape: BoxShape.circle,
+                border: Border.all(color: Spectrum.surface, width: 2),
+              ),
+              child: const Icon(Icons.photo_camera_rounded,
+                  size: 11, color: Colors.white),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -858,7 +878,7 @@ class _StepDraft {
   factory _StepDraft.blank() => _StepDraft(
         key: _uuid.v4(),
         kind: StepKind.info,
-        pictogram: const PictogramRef.mulberry('star'),
+        pictogram: const PictogramRef.asset('star'),
         labelCs: TextEditingController(),
         count: TextEditingController(text: '10'),
         duration: TextEditingController(text: '60'),

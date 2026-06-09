@@ -378,6 +378,8 @@ class _SettingsSheetState extends State<_SettingsSheet> {
             ),
             const SizedBox(height: Gap.md),
             const Divider(),
+            _HowItWorksSection(lang: _lang),
+            const Divider(),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.info_outline_rounded,
@@ -387,19 +389,6 @@ class _SettingsSheetState extends State<_SettingsSheet> {
               subtitle: const Text(
                   'v0.4 · Pictograms: Mulberry Symbols (CC BY-SA 4.0)',
                   style: TextStyle(fontSize: 12)),
-            ),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.help_outline_rounded,
-                  color: Spectrum.inkSoft),
-              title: Text(
-                  _lang == 'en' ? 'How to use' : 'Jak to funguje'),
-              subtitle: Text(
-                _lang == 'en'
-                    ? 'Preview first, then do it together live.'
-                    : 'Nejdřív si projděte rutinu, pak ji zvládněte spolu.',
-                style: const TextStyle(fontSize: 12),
-              ),
             ),
           ],
         ),
@@ -421,6 +410,96 @@ class _SheetLabel extends StatelessWidget {
             letterSpacing: 0.6,
             color: Spectrum.inkSoft),
       );
+}
+
+class _HowItWorksSection extends StatefulWidget {
+  final String lang;
+  const _HowItWorksSection({required this.lang});
+
+  @override
+  State<_HowItWorksSection> createState() => _HowItWorksSectionState();
+}
+
+class _HowItWorksSectionState extends State<_HowItWorksSection> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = widget.lang == 'cs';
+    final bullets = cs
+        ? [
+            'Spectroom má předpřipravené výzvy: zubaře, oblékání, stříhání nehtů i vlasů a výlet k doktorovi.',
+            'Každou výzvu si lze nejdřív prohlédnout krok za krokem — bez tlaku, jen jako přípravu.',
+            'V živém režimu provede dítě celou rutinou: obrázek za obrázkem, s odpočítáváním nebo časovačem.',
+            'Rodiče mohou přidávat vlastní výzvy: klepněte na „+" a zadejte název, kategorii a kroky.',
+            'Ke každému kroku přiřaďte obrázek — klepněte na čtvereček s ikonou fotoaparátu. Fotku lze vyfotit přímo nebo vybrat z galerie.',
+            'Krok může být jen obrázek (informace), odpočet čísel (1, 2, 3…) nebo vizuální časovač.',
+          ]
+        : [
+            'Spectroom comes with built-in challenges: dentist, getting dressed, nail clipping, haircut, and a doctor visit.',
+            'Any challenge can be previewed step-by-step first — no pressure, just preparation.',
+            'In live mode the app guides your child picture by picture, with countdown or visual timer.',
+            'Parents can create custom challenges: tap "+" and enter a name, category, and steps.',
+            'For each step, assign a picture — tap the tile with the camera icon to take a photo or pick from the gallery.',
+            'A step can be a plain picture card, a countdown (1, 2, 3…), or a visual timer.',
+          ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: const Icon(Icons.help_outline_rounded,
+              color: Spectrum.inkSoft),
+          title:
+              Text(cs ? 'Jak to funguje' : 'How it works'),
+          trailing: Icon(
+            _expanded
+                ? Icons.expand_less_rounded
+                : Icons.expand_more_rounded,
+            color: Spectrum.inkSoft,
+          ),
+          onTap: () => setState(() => _expanded = !_expanded),
+        ),
+        if (_expanded)
+          Padding(
+            padding:
+                const EdgeInsets.fromLTRB(0, 0, 0, Gap.sm),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: bullets
+                  .map((b) => Padding(
+                        padding:
+                            const EdgeInsets.only(bottom: 8),
+                        child: Row(
+                          crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.only(
+                                  top: 6, right: 8),
+                              width: 5,
+                              height: 5,
+                              decoration: BoxDecoration(
+                                  color: Spectrum.mint,
+                                  shape: BoxShape.circle),
+                            ),
+                            Expanded(
+                              child: Text(b,
+                                  style: const TextStyle(
+                                      fontSize: 13,
+                                      height: 1.5,
+                                      color: Spectrum.inkSoft)),
+                            ),
+                          ],
+                        ),
+                      ))
+                  .toList(),
+            ),
+          ),
+      ],
+    );
+  }
 }
 
 class _LangChip extends StatelessWidget {

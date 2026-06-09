@@ -2,6 +2,37 @@ import '../models/challenge.dart';
 import '../models/pictogram_ref.dart';
 
 final List<Challenge> seedChallenges = [
+  // ── MEDICAL (shown first — top row) ───────────────────────
+  Challenge(
+    id: 'seed.doctor',
+    titleCs: 'U doktora',
+    titleEn: 'Doctor',
+    category: ChallengeCategory.medical,
+    cover: const PictogramRef.asset('doctor'),
+    steps: [
+      const ChallengeStep(id: 'doctor.1', kind: StepKind.info, pictogram: PictogramRef.asset('door'), labelCs: 'Přijdeme k doktorovi', labelEn: 'Arrive at doctor'),
+      const ChallengeStep(id: 'doctor.2', kind: StepKind.info, pictogram: PictogramRef.asset('weigh'), labelCs: 'Zvážíme a změříme', labelEn: 'Weigh and measure'),
+      const ChallengeStep(id: 'doctor.3', kind: StepKind.timer, pictogram: PictogramRef.asset('stethoscope'), labelCs: 'Doktor poslechne', labelEn: 'Doctor listens', durationSec: 90),
+      const ChallengeStep(id: 'doctor.4', kind: StepKind.info, pictogram: PictogramRef.asset('star'), labelCs: 'Byli jsme stateční', labelEn: 'We were brave'),
+      const ChallengeStep(id: 'doctor.5', kind: StepKind.info, pictogram: PictogramRef.asset('finish'), labelCs: 'Hotovo!', labelEn: 'All done!'),
+    ],
+  ),
+  Challenge(
+    id: 'seed.dentist',
+    titleCs: 'U zubaře',
+    titleEn: 'Dentist',
+    category: ChallengeCategory.medical,
+    cover: const PictogramRef.asset('dentist'),
+    steps: [
+      const ChallengeStep(id: 'dentist.1', kind: StepKind.info, pictogram: PictogramRef.asset('door'), labelCs: 'Jdeme do ordinace', labelEn: 'Going to the clinic'),
+      const ChallengeStep(id: 'dentist.2', kind: StepKind.info, pictogram: PictogramRef.asset('chair'), labelCs: 'Kouzelné křeslo jezdí nahoru a dolů', labelEn: 'Magic chair goes up and down'),
+      const ChallengeStep(id: 'dentist.3', kind: StepKind.info, pictogram: PictogramRef.asset('sit'), labelCs: 'Sedíš u maminky na klíně', labelEn: 'You sit on mummy\'s lap'),
+      const ChallengeStep(id: 'dentist.4', kind: StepKind.info, pictogram: PictogramRef.asset('dentist'), labelCs: 'Sloní chobot pije vodu, foukátko fouká', labelEn: 'Elephant trunk drinks water, blower blows air'),
+      const ChallengeStep(id: 'dentist.5', kind: StepKind.countdown, pictogram: PictogramRef.asset('dentist_look'), labelCs: 'Spočítáme všechny zoubky!', labelEn: 'Let\'s count all your teeth!', count: 20),
+      const ChallengeStep(id: 'dentist.6', kind: StepKind.info, pictogram: PictogramRef.asset('stickers'), labelCs: 'Vyber si odměnu z krabičky!', labelEn: 'Pick a reward from the box!'),
+      const ChallengeStep(id: 'dentist.7', kind: StepKind.info, pictogram: PictogramRef.asset('star'), labelCs: 'Byl jsi skvělý!', labelEn: 'You were amazing!'),
+    ],
+  ),
   // ── HYGIENE ────────────────────────────────────────────────
   Challenge(
     id: 'seed.nails',
@@ -56,35 +87,6 @@ final List<Challenge> seedChallenges = [
       const ChallengeStep(id: 'dressed.4', kind: StepKind.info, pictogram: PictogramRef.asset('socks'), labelCs: 'Ponožky', labelEn: 'Socks'),
       const ChallengeStep(id: 'dressed.5', kind: StepKind.info, pictogram: PictogramRef.asset('shoes'), labelCs: 'Boty', labelEn: 'Shoes'),
       const ChallengeStep(id: 'dressed.6', kind: StepKind.info, pictogram: PictogramRef.asset('star'), labelCs: 'Hotovo!', labelEn: 'All done!'),
-    ],
-  ),
-  // ── MEDICAL ────────────────────────────────────────────────
-  Challenge(
-    id: 'seed.dentist',
-    titleCs: 'U zubaře',
-    titleEn: 'Dentist',
-    category: ChallengeCategory.medical,
-    cover: const PictogramRef.asset('dentist'),
-    steps: [
-      const ChallengeStep(id: 'dentist.1', kind: StepKind.info, pictogram: PictogramRef.asset('door'), labelCs: 'Přijdeme do ordinace', labelEn: 'Arrive at clinic'),
-      const ChallengeStep(id: 'dentist.2', kind: StepKind.info, pictogram: PictogramRef.asset('chair'), labelCs: 'Sedneme do křesla', labelEn: 'Sit in the chair'),
-      const ChallengeStep(id: 'dentist.3', kind: StepKind.timer, pictogram: PictogramRef.asset('dentist_look'), labelCs: 'Pan doktor se podívá', labelEn: 'Dentist looks', durationSec: 120),
-      const ChallengeStep(id: 'dentist.4', kind: StepKind.info, pictogram: PictogramRef.asset('stickers'), labelCs: 'Dostaneme samolepku', labelEn: 'Get a sticker'),
-      const ChallengeStep(id: 'dentist.5', kind: StepKind.info, pictogram: PictogramRef.asset('star'), labelCs: 'Hotovo!', labelEn: 'All done!'),
-    ],
-  ),
-  Challenge(
-    id: 'seed.doctor',
-    titleCs: 'U doktora',
-    titleEn: 'Doctor',
-    category: ChallengeCategory.medical,
-    cover: const PictogramRef.asset('doctor'),
-    steps: [
-      const ChallengeStep(id: 'doctor.1', kind: StepKind.info, pictogram: PictogramRef.asset('door'), labelCs: 'Přijdeme k doktorovi', labelEn: 'Arrive at doctor'),
-      const ChallengeStep(id: 'doctor.2', kind: StepKind.info, pictogram: PictogramRef.asset('weigh'), labelCs: 'Zvážíme a změříme', labelEn: 'Weigh and measure'),
-      const ChallengeStep(id: 'doctor.3', kind: StepKind.timer, pictogram: PictogramRef.asset('stethoscope'), labelCs: 'Doktor poslechne', labelEn: 'Doctor listens', durationSec: 90),
-      const ChallengeStep(id: 'doctor.4', kind: StepKind.info, pictogram: PictogramRef.asset('star'), labelCs: 'Byli jsme stateční', labelEn: 'We were brave'),
-      const ChallengeStep(id: 'doctor.5', kind: StepKind.info, pictogram: PictogramRef.asset('finish'), labelCs: 'Hotovo!', labelEn: 'All done!'),
     ],
   ),
 ];
