@@ -5,6 +5,7 @@ import '../data/lang_store.dart';
 import '../data/prefs.dart';
 import '../design/spectrum.dart';
 import '../models/challenge.dart';
+import '../models/pictogram_ref.dart';
 import '../theme.dart';
 import '../widgets/pictogram_view.dart';
 import 'builder_screen.dart';
@@ -265,25 +266,96 @@ class _SettingsSheet extends StatefulWidget {
 }
 
 class _SettingsSheetState extends State<_SettingsSheet> {
-  late final TextEditingController _nameCtrl;
+  int _timerSec = 300;
+  int _countdownN = 10;
   bool _loaded = false;
 
   @override
   void initState() {
     super.initState();
-    _nameCtrl = TextEditingController();
-    Prefs.kidName().then((n) {
-      if (mounted) setState(() { _nameCtrl.text = n; _loaded = true; });
+    Future.wait([
+      Prefs.standaloneTimerSec(),
+      Prefs.standaloneCountdownN(),
+    ]).then((vals) {
+      if (mounted) {
+        setState(() {
+          _timerSec = vals[0];
+          _countdownN = vals[1];
+          _loaded = true;
+        });
+      }
     });
   }
 
-  @override
-  void dispose() {
-    _nameCtrl.dispose();
-    super.dispose();
+  String get _lang => LangStore.instance.lang;
+
+  void _adjustTimer(int deltaSec) {
+    final v = (_timerSec + deltaSec).clamp(30, 30 * 60);
+    setState(() => _timerSec = v);
+    Prefs.setStandaloneTimerSec(v);
   }
 
-  String get _lang => LangStore.instance.lang;
+  void _adjustCountdown(int delta) {
+    final v = (_countdownN + delta).clamp(2, 100);
+    setState(() => _countdownN = v);
+    Prefs.setStandaloneCountdownN(v);
+  }
+
+  void _startTimer(BuildContext ctx) {
+    final sec = _timerSec;
+    final nav = Navigator.of(ctx);
+    nav.pop();
+    nav.push(MaterialPageRoute(
+      builder: (_) => RunnerScreen(
+        live: true,
+        challenge: Challenge(
+          id: 'standalone.timer',
+          titleCs: 'Časovač',
+          titleEn: 'Timer',
+          category: ChallengeCategory.routine,
+          cover: const PictogramRef.asset('finish'),
+          steps: [
+            ChallengeStep(
+              id: 'st.step',
+              kind: StepKind.timer,
+              pictogram: const PictogramRef.asset('finish'),
+              labelCs: 'Jdeme na to',
+              labelEn: 'Go',
+              durationSec: sec,
+            ),
+          ],
+        ),
+      ),
+    ));
+  }
+
+  void _startCountdown(BuildContext ctx) {
+    final n = _countdownN;
+    final nav = Navigator.of(ctx);
+    nav.pop();
+    nav.push(MaterialPageRoute(
+      builder: (_) => RunnerScreen(
+        live: true,
+        challenge: Challenge(
+          id: 'standalone.countdown',
+          titleCs: 'Odpočet',
+          titleEn: 'Countdown',
+          category: ChallengeCategory.hygiene,
+          cover: const PictogramRef.asset('star'),
+          steps: [
+            ChallengeStep(
+              id: 'sc.step',
+              kind: StepKind.countdown,
+              pictogram: const PictogramRef.asset('star'),
+              labelCs: 'Odpočítáváme!',
+              labelEn: 'Counting down!',
+              count: n,
+            ),
+          ],
+        ),
+      ),
+    ));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -292,8 +364,11 @@ class _SettingsSheetState extends State<_SettingsSheet> {
           height: 200,
           child: Center(child: CircularProgressIndicator()));
     }
+    final lang = _lang;
+    final mm = _timerSec ~/ 60;
+    final ss = _timerSec % 60;
     return SafeArea(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: EdgeInsets.fromLTRB(
             Gap.lg,
             0,
@@ -305,7 +380,7 @@ class _SettingsSheetState extends State<_SettingsSheet> {
           children: [
             Center(
               child: Text(
-                _lang == 'en' ? 'Settings' : 'Nastavení',
+                lang == 'en' ? 'Settings' : 'Nastavení',
                 style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -313,35 +388,39 @@ class _SettingsSheetState extends State<_SettingsSheet> {
               ),
             ),
             const SizedBox(height: Gap.lg),
-            _SheetLabel(_lang == 'en' ? "Child's name" : 'Jméno dítěte'),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _nameCtrl,
-              textCapitalization: TextCapitalization.words,
-              decoration: InputDecoration(
-                hintText: _lang == 'en' ? 'E.g. Tom' : 'Např. Tomáš',
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(Radii.sm)),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(Radii.sm),
-                  borderSide: const BorderSide(
-                      color: Spectrum.primary, width: 2),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(Radii.sm),
-                  borderSide: BorderSide(
-                      color: Spectrum.inkSoft.withValues(alpha: 0.3)),
-                ),
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.check_rounded),
-                  onPressed: () =>
-                      Prefs.setKidName(_nameCtrl.text),
-                ),
-              ),
-              onSubmitted: Prefs.setKidName,
+            // ── Timer card ──────────────────────────────────────
+            _RunnerCard(
+              color: Spectrum.mint,
+              icon: Icons.timer_rounded,
+              title: lang == 'en' ? 'Timer' : 'Časovač',
+              display:
+                  '${mm.toString().padLeft(2, '0')}:${ss.toString().padLeft(2, '0')}',
+              onMinus: () => _adjustTimer(-60),
+              onPlus: () => _adjustTimer(60),
+              minusLabel: '−1 min',
+              plusLabel: '+1 min',
+              onStart: () => _startTimer(context),
+              startLabel: lang == 'en' ? 'Start' : 'Spustit',
             ),
-            const SizedBox(height: Gap.lg),
-            _SheetLabel(_lang == 'en' ? 'Language' : 'Jazyk'),
+            const SizedBox(height: Gap.sm),
+            // ── Countdown card ──────────────────────────────────
+            _RunnerCard(
+              color: Spectrum.amber,
+              icon: Icons.pin_rounded,
+              title: lang == 'en' ? 'Countdown' : 'Odpočet',
+              display: '$_countdownN',
+              onMinus: () => _adjustCountdown(-1),
+              onPlus: () => _adjustCountdown(1),
+              minusLabel: '−1',
+              plusLabel: '+1',
+              onStart: () => _startCountdown(context),
+              startLabel: lang == 'en' ? 'Start' : 'Spustit',
+            ),
+            const SizedBox(height: Gap.md),
+            const Divider(),
+            // ── Language ────────────────────────────────────────
+            const SizedBox(height: Gap.sm),
+            _SheetLabel(lang == 'en' ? 'Language' : 'Jazyk'),
             const SizedBox(height: 8),
             AnimatedBuilder(
               animation: LangStore.instance,
@@ -378,20 +457,170 @@ class _SettingsSheetState extends State<_SettingsSheet> {
             ),
             const SizedBox(height: Gap.md),
             const Divider(),
-            _HowItWorksSection(lang: _lang),
+            _HowItWorksSection(lang: lang),
             const Divider(),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.info_outline_rounded,
                   color: Spectrum.inkSoft),
               title: Text(
-                  _lang == 'en' ? 'About Spectroom' : 'O aplikaci'),
+                  lang == 'en' ? 'About Spectroom' : 'O aplikaci'),
               subtitle: const Text(
-                  'v0.4 · Pictograms: Mulberry Symbols (CC BY-SA 4.0)',
+                  'v0.5 · Pictograms: Mulberry Symbols (CC BY-SA 4.0)',
                   style: TextStyle(fontSize: 12)),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ── Runner card (timer / countdown) ─────────────────────────
+
+class _RunnerCard extends StatelessWidget {
+  final Color color;
+  final IconData icon;
+  final String title;
+  final String display;
+  final VoidCallback onMinus;
+  final VoidCallback onPlus;
+  final String minusLabel;
+  final String plusLabel;
+  final VoidCallback onStart;
+  final String startLabel;
+
+  const _RunnerCard({
+    required this.color,
+    required this.icon,
+    required this.title,
+    required this.display,
+    required this.onMinus,
+    required this.onPlus,
+    required this.minusLabel,
+    required this.plusLabel,
+    required this.onStart,
+    required this.startLabel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tint = Spectrum.tint(color, 0.84);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Spectrum.surface,
+        borderRadius: BorderRadius.circular(Radii.lg),
+        boxShadow: [
+          BoxShadow(
+              color: color.withValues(alpha: 0.15),
+              blurRadius: 20,
+              offset: const Offset(0, 8)),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Header stripe
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(
+                horizontal: Gap.md, vertical: Gap.sm),
+            decoration: BoxDecoration(
+              color: tint,
+              borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(Radii.lg)),
+            ),
+            child: Row(
+              children: [
+                Icon(icon, size: 18, color: color),
+                const SizedBox(width: 6),
+                Text(title,
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: color)),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+                Gap.md, Gap.md, Gap.md, Gap.md),
+            child: Column(
+              children: [
+                // Big display
+                Text(
+                  display,
+                  style: TextStyle(
+                      fontSize: 56,
+                      fontWeight: FontWeight.w200,
+                      letterSpacing: -2,
+                      color: color,
+                      fontFamily: 'Geist'),
+                ),
+                const SizedBox(height: Gap.sm),
+                // − / + row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _AdjustBtn(
+                        label: minusLabel,
+                        color: color,
+                        onTap: onMinus),
+                    const SizedBox(width: Gap.md),
+                    _AdjustBtn(
+                        label: plusLabel,
+                        color: color,
+                        onTap: onPlus),
+                  ],
+                ),
+                const SizedBox(height: Gap.md),
+                // Start button
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: onStart,
+                    icon: const Icon(Icons.play_arrow_rounded),
+                    label: Text(startLabel),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: color,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size.fromHeight(52),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AdjustBtn extends StatelessWidget {
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+  const _AdjustBtn(
+      {required this.label,
+      required this.color,
+      required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+            horizontal: Gap.md, vertical: Gap.sm),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(Radii.sm),
+        ),
+        child: Text(label,
+            style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: color)),
       ),
     );
   }

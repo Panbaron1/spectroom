@@ -25,15 +25,26 @@ class Prefs {
     await p.setString(_kLang, l);
   }
 
-  static const _kKidName = 'kid_name_v1';
+  static const _kTimerSec = 'standalone_timer_sec_v1';
+  static const _kCountdownN = 'standalone_countdown_n_v1';
 
-  static Future<String> kidName() async {
+  static Future<int> standaloneTimerSec() async {
     final p = await SharedPreferences.getInstance();
-    return p.getString(_kKidName) ?? '';
+    return p.getInt(_kTimerSec) ?? 300;
   }
 
-  static Future<void> setKidName(String name) async {
+  static Future<void> setStandaloneTimerSec(int s) async {
     final p = await SharedPreferences.getInstance();
-    await p.setString(_kKidName, name.trim());
+    await p.setInt(_kTimerSec, s);
+  }
+
+  static Future<int> standaloneCountdownN() async {
+    final p = await SharedPreferences.getInstance();
+    return p.getInt(_kCountdownN) ?? 10;
+  }
+
+  static Future<void> setStandaloneCountdownN(int n) async {
+    final p = await SharedPreferences.getInstance();
+    await p.setInt(_kCountdownN, n);
   }
 }
