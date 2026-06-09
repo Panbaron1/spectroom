@@ -14,7 +14,6 @@ final List<Challenge> seedChallenges = [
       const ChallengeStep(id: 'doctor.2', kind: StepKind.info, pictogram: PictogramRef.asset('weigh'), labelCs: 'Zvážíme a změříme', labelEn: 'Weigh and measure'),
       const ChallengeStep(id: 'doctor.3', kind: StepKind.timer, pictogram: PictogramRef.asset('stethoscope'), labelCs: 'Doktor poslechne', labelEn: 'Doctor listens', durationSec: 90),
       const ChallengeStep(id: 'doctor.4', kind: StepKind.info, pictogram: PictogramRef.asset('star'), labelCs: 'Byli jsme stateční', labelEn: 'We were brave'),
-      const ChallengeStep(id: 'doctor.5', kind: StepKind.info, pictogram: PictogramRef.asset('finish'), labelCs: 'Hotovo!', labelEn: 'All done!'),
     ],
   ),
   Challenge(
@@ -44,7 +43,6 @@ final List<Challenge> seedChallenges = [
       const ChallengeStep(id: 'nails.1', kind: StepKind.info, pictogram: PictogramRef.asset('sit'), labelCs: 'Sedneme si', labelEn: 'Sit down'),
       const ChallengeStep(id: 'nails.2', kind: StepKind.info, pictogram: PictogramRef.asset('hands'), labelCs: 'Ukážeme ruce', labelEn: 'Show hands'),
       const ChallengeStep(id: 'nails.3', kind: StepKind.countdown, pictogram: PictogramRef.asset('clip_nails'), labelCs: 'Deset nehtů', labelEn: 'Ten nails', count: 10),
-      const ChallengeStep(id: 'nails.4', kind: StepKind.info, pictogram: PictogramRef.asset('star'), labelCs: 'Hotovo!', labelEn: 'All done!'),
     ],
   ),
   Challenge(
@@ -57,7 +55,6 @@ final List<Challenge> seedChallenges = [
       const ChallengeStep(id: 'teeth.1', kind: StepKind.info, pictogram: PictogramRef.asset('toothpaste'), labelCs: 'Pasta na kartáček', labelEn: 'Paste on brush'),
       const ChallengeStep(id: 'teeth.2', kind: StepKind.timer, pictogram: PictogramRef.asset('toothbrush'), labelCs: 'Čistíme dvě minuty', labelEn: 'Brush two minutes', durationSec: 120),
       const ChallengeStep(id: 'teeth.3', kind: StepKind.info, pictogram: PictogramRef.asset('rinse'), labelCs: 'Vyplácháme pusu', labelEn: 'Rinse'),
-      const ChallengeStep(id: 'teeth.4', kind: StepKind.info, pictogram: PictogramRef.asset('star'), labelCs: 'Hotovo!', labelEn: 'All done!'),
     ],
   ),
   Challenge(
@@ -70,7 +67,6 @@ final List<Challenge> seedChallenges = [
       const ChallengeStep(id: 'haircut.1', kind: StepKind.info, pictogram: PictogramRef.asset('sit'), labelCs: 'Sedneme si', labelEn: 'Sit down'),
       const ChallengeStep(id: 'haircut.2', kind: StepKind.info, pictogram: PictogramRef.asset('gown'), labelCs: 'Dáme pláštěnku', labelEn: 'Put on cape'),
       const ChallengeStep(id: 'haircut.3', kind: StepKind.timer, pictogram: PictogramRef.asset('cut_hair'), labelCs: 'Stříháme', labelEn: 'Cutting', durationSec: 180),
-      const ChallengeStep(id: 'haircut.4', kind: StepKind.info, pictogram: PictogramRef.asset('star'), labelCs: 'Hotovo!', labelEn: 'All done!'),
     ],
   ),
   // ── ROUTINE ────────────────────────────────────────────────
@@ -86,7 +82,6 @@ final List<Challenge> seedChallenges = [
       const ChallengeStep(id: 'dressed.3', kind: StepKind.info, pictogram: PictogramRef.asset('trousers'), labelCs: 'Kalhoty', labelEn: 'Trousers'),
       const ChallengeStep(id: 'dressed.4', kind: StepKind.info, pictogram: PictogramRef.asset('socks'), labelCs: 'Ponožky', labelEn: 'Socks'),
       const ChallengeStep(id: 'dressed.5', kind: StepKind.info, pictogram: PictogramRef.asset('shoes'), labelCs: 'Boty', labelEn: 'Shoes'),
-      const ChallengeStep(id: 'dressed.6', kind: StepKind.info, pictogram: PictogramRef.asset('star'), labelCs: 'Hotovo!', labelEn: 'All done!'),
     ],
   ),
 ];
