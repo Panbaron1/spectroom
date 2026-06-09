@@ -99,6 +99,23 @@ final List<Challenge> seedChallenges = [
     ],
   ),
   Challenge(
+    id: 'seed.potty',
+    titleCs: 'Záchod',
+    titleEn: 'Potty',
+    category: ChallengeCategory.hygiene,
+    cover: const PictogramRef.asset('toilet'),
+    steps: [
+      const ChallengeStep(id: 'potty.1', kind: StepKind.info, pictogram: PictogramRef.asset('door'), labelCs: 'Jdeme na záchod', labelEn: 'Go to the toilet'),
+      const ChallengeStep(id: 'potty.2', kind: StepKind.info, pictogram: PictogramRef.asset('pants'), labelCs: 'Sundáme kalhoty', labelEn: 'Pants down'),
+      const ChallengeStep(id: 'potty.3', kind: StepKind.info, pictogram: PictogramRef.asset('toilet'), labelCs: 'Sedneme si', labelEn: 'Sit down'),
+      const ChallengeStep(id: 'potty.4', kind: StepKind.timer, pictogram: PictogramRef.asset('toilet'), labelCs: 'Čekáme', labelEn: 'Wait', durationSec: 120),
+      const ChallengeStep(id: 'potty.5', kind: StepKind.info, pictogram: PictogramRef.asset('toilet_paper'), labelCs: 'Otřeme se', labelEn: 'Wipe'),
+      const ChallengeStep(id: 'potty.6', kind: StepKind.info, pictogram: PictogramRef.asset('pants'), labelCs: 'Oblečeme kalhoty', labelEn: 'Pants up'),
+      const ChallengeStep(id: 'potty.7', kind: StepKind.info, pictogram: PictogramRef.asset('toilet'), labelCs: 'Spláchnutí', labelEn: 'Flush'),
+      const ChallengeStep(id: 'potty.8', kind: StepKind.info, pictogram: PictogramRef.asset('faucet'), labelCs: 'Umyjeme ruce', labelEn: 'Wash hands'),
+    ],
+  ),
+  Challenge(
     id: 'seed.handwash',
     titleCs: 'Mytí rukou',
     titleEn: 'Wash hands',

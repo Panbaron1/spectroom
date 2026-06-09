@@ -68,6 +68,9 @@ const ICONS: Record<string, [string, string]> = {
   pajamas:       ['Kawaii pyjama top folded neatly with small stars or moons pattern, cute face on the fabric. Lavender #BCACE4 filled. White background.', '#BCACE4'],
   moon:          ['Kawaii crescent moon with big cute sleepy face (half-closed eyes), small stars around it. Amber #F1C889 filled moon. White background.', '#F1C889'],
   book:          ['Kawaii open book with cute smiling face on the cover, colorful pages visible. Sky blue #93C2E6 filled cover. White background.', '#93C2E6'],
+  // ── potty ────────────────────────────────────────────────────
+  toilet:        ['Kawaii friendly toilet with cute smiling face on the bowl, round seat up, simple rounded shape. Sky blue #93C2E6 filled bowl. White background.', '#93C2E6'],
+  toilet_paper:  ['Kawaii toilet paper roll on holder, cute smiling face on the roll, single sheet hanging down. Mint green #8FD3B6 filled roll. White background.', '#8FD3B6'],
   // ── universal ───────────────────────────────────────────────
   star:          ['Kawaii rounded five-pointed star with cute smiling face. Amber #F1C889 filled. White background.', '#F1C889'],
   finish:        ['Kawaii green checkmark or trophy cup with cute face. Mint green #8FD3B6 filled. White background.', '#8FD3B6'],
