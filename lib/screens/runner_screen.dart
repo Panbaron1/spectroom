@@ -2,11 +2,13 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../data/lang_store.dart';
 import '../design/spectrum.dart';
 import '../models/challenge.dart';
 import '../models/pictogram_ref.dart';
+import '../services/audio_service.dart';
 import '../theme.dart';
 import '../widgets/pictogram_view.dart';
 
@@ -34,14 +36,43 @@ class _RunnerScreenState extends State<RunnerScreen> {
   Color get _tint => Palette.tintOf(widget.challenge.category);
   bool get _atEnd => _index >= widget.challenge.steps.length;
 
+  @override
+  void initState() {
+    super.initState();
+    if (widget.live) _playStepAudio(0);
+  }
+
+  @override
+  void dispose() {
+    AudioService.instance.stopVoice();
+    super.dispose();
+  }
+
+  void _playStepAudio(int index) {
+    if (index >= widget.challenge.steps.length) return;
+    final audio = widget.challenge.steps[index].audioPath;
+    AudioService.instance.stopVoice();
+    if (audio != null && audio.isNotEmpty) {
+      AudioService.instance.playVoice(audio);
+    }
+  }
+
   void _next() {
     if (_atEnd) return;
     setState(() => _index++);
+    if (widget.live) {
+      if (!_atEnd) {
+        _playStepAudio(_index);
+      } else {
+        AudioService.instance.stopVoice();
+      }
+    }
   }
 
   void _back() {
     if (_index == 0) return;
     setState(() => _index--);
+    if (widget.live) _playStepAudio(_index);
   }
 
   @override
@@ -250,6 +281,8 @@ class _CountdownTapperState extends State<_CountdownTapper>
 
   void _tap() {
     if (_n <= 0) return;
+    HapticFeedback.selectionClick();
+    AudioService.instance.playTick();
     setState(() => _n--);
     _pop.forward(from: 0);
     if (_n == 0) {
@@ -588,6 +621,13 @@ class _CelebrationState extends State<_Celebration>
   late final AnimationController _confetti = AnimationController(
       vsync: this, duration: const Duration(milliseconds: 2400))
     ..forward();
+
+  @override
+  void initState() {
+    super.initState();
+    HapticFeedback.heavyImpact();
+    AudioService.instance.playCelebration();
+  }
 
   @override
   void dispose() {

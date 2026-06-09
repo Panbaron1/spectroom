@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'dart:io';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:record/record.dart';
 import 'package:uuid/uuid.dart';
 
 import '../data/challenge_store.dart';
@@ -375,6 +378,31 @@ class _StepEditor extends StatelessWidget {
     required this.onRemove,
   });
 
+  Future<void> _openVoiceSheet(BuildContext context) async {
+    final dir = await getApplicationDocumentsDirectory();
+    final audioDir = Directory('${dir.path}/spectroom_audio');
+    await audioDir.create(recursive: true);
+    final filePath = '${audioDir.path}/${draft.key}.m4a';
+    if (!context.mounted) return;
+    final result = await showModalBottomSheet<String?>(
+      context: context,
+      backgroundColor: Spectrum.surface,
+      isScrollControlled: true,
+      showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(Radii.lg)),
+      ),
+      builder: (_) => _VoiceSheet(
+        filePath: filePath,
+        existingPath: draft.audioPath,
+      ),
+    );
+    if (result != null) {
+      draft.audioPath = result.isEmpty ? null : result;
+      onChanged();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
@@ -438,6 +466,21 @@ class _StepEditor extends StatelessWidget {
                       isDense: true,
                       contentPadding:
                           const EdgeInsets.symmetric(vertical: 4),
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => _openVoiceSheet(context),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Icon(
+                      draft.audioPath != null
+                          ? Icons.mic_rounded
+                          : Icons.mic_none_rounded,
+                      size: 20,
+                      color: draft.audioPath != null
+                          ? Spectrum.coral
+                          : Spectrum.inkSoft,
                     ),
                   ),
                 ),
@@ -867,6 +910,7 @@ class _StepDraft {
   final String key;
   StepKind kind;
   PictogramRef pictogram;
+  String? audioPath;
   final TextEditingController labelCs;
   final TextEditingController count;
   final TextEditingController duration;
@@ -878,6 +922,7 @@ class _StepDraft {
     required this.labelCs,
     required this.count,
     required this.duration,
+    this.audioPath,
   });
 
   factory _StepDraft.blank() => _StepDraft(
@@ -894,10 +939,9 @@ class _StepDraft {
         kind: s.kind,
         pictogram: s.pictogram,
         labelCs: TextEditingController(text: s.labelCs),
-        count: TextEditingController(
-            text: '${s.count ?? 10}'),
-        duration: TextEditingController(
-            text: '${s.durationSec ?? 60}'),
+        count: TextEditingController(text: '${s.count ?? 10}'),
+        duration: TextEditingController(text: '${s.durationSec ?? 60}'),
+        audioPath: s.audioPath,
       );
 
   ChallengeStep toStep() => ChallengeStep(
@@ -911,11 +955,276 @@ class _StepDraft {
         durationSec: kind == StepKind.timer
             ? int.tryParse(duration.text) ?? 60
             : null,
+        audioPath: audioPath,
       );
 
   void dispose() {
     labelCs.dispose();
     count.dispose();
     duration.dispose();
+  }
+}
+
+// ── Voice recording sheet ────────────────────────────────────
+
+enum _VPhase { idle, recording, done }
+
+class _VoiceSheet extends StatefulWidget {
+  final String filePath;
+  final String? existingPath;
+  const _VoiceSheet({required this.filePath, this.existingPath});
+
+  @override
+  State<_VoiceSheet> createState() => _VoiceSheetState();
+}
+
+class _VoiceSheetState extends State<_VoiceSheet> {
+  final _recorder = AudioRecorder();
+  final _player = AudioPlayer();
+  _VPhase _phase = _VPhase.idle;
+  String? _recordedPath;
+  int _elapsed = 0;
+  Timer? _timer;
+  bool _playing = false;
+  StreamSubscription? _playerSub;
+
+  String get _lang => LangStore.instance.lang;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.existingPath != null) {
+      _recordedPath = widget.existingPath;
+      _phase = _VPhase.done;
+    }
+    _playerSub = _player.onPlayerStateChanged.listen((s) {
+      if (mounted) setState(() => _playing = s == PlayerState.playing);
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _playerSub?.cancel();
+    if (_phase == _VPhase.recording) _recorder.stop();
+    _recorder.dispose();
+    _player.dispose();
+    super.dispose();
+  }
+
+  String _fmt(int s) =>
+      '${s ~/ 60}:${(s % 60).toString().padLeft(2, '0')}';
+
+  Future<void> _startRecording() async {
+    if (!await _recorder.hasPermission()) return;
+    await _recorder.start(
+      const RecordConfig(encoder: AudioEncoder.aacLc),
+      path: widget.filePath,
+    );
+    _elapsed = 0;
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() => _elapsed++);
+    });
+    setState(() {
+      _phase = _VPhase.recording;
+      _recordedPath = null;
+    });
+  }
+
+  Future<void> _stopRecording() async {
+    _timer?.cancel();
+    final path = await _recorder.stop();
+    setState(() {
+      _phase = _VPhase.done;
+      _recordedPath = path ?? widget.filePath;
+    });
+  }
+
+  Future<void> _togglePlay() async {
+    if (_recordedPath == null) return;
+    if (_playing) {
+      await _player.stop();
+    } else {
+      await _player.play(DeviceFileSource(_recordedPath!));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 8, 24, 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              _lang == 'en' ? 'Voice for this step' : 'Hlas pro tento krok',
+              style: const TextStyle(
+                  fontSize: 17, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 32),
+            if (_phase == _VPhase.idle) ...[
+              _BigMicButton(onTap: _startRecording),
+              const SizedBox(height: 12),
+              Text(
+                _lang == 'en'
+                    ? 'Record your voice for this step'
+                    : 'Nahraj svůj hlas pro tento krok',
+                style: const TextStyle(
+                    color: Spectrum.inkSoft, fontSize: 14),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child:
+                    Text(_lang == 'en' ? 'Cancel' : 'Zrušit'),
+              ),
+            ],
+            if (_phase == _VPhase.recording) ...[
+              _PulsingRecordButton(onTap: _stopRecording),
+              const SizedBox(height: 16),
+              Text(
+                _fmt(_elapsed),
+                style: const TextStyle(
+                    fontFamily: 'Geist',
+                    fontSize: 36,
+                    fontWeight: FontWeight.w200,
+                    color: Spectrum.ink),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _lang == 'en'
+                    ? 'Recording… tap to stop'
+                    : 'Nahrávám… klepni pro stop',
+                style: const TextStyle(
+                    color: Spectrum.inkSoft, fontSize: 14),
+              ),
+            ],
+            if (_phase == _VPhase.done && _recordedPath != null) ...[
+              IconButton.filledTonal(
+                onPressed: _togglePlay,
+                iconSize: 44,
+                icon: Icon(_playing
+                    ? Icons.stop_rounded
+                    : Icons.play_arrow_rounded),
+                style: IconButton.styleFrom(
+                  backgroundColor: Spectrum.mint.withValues(alpha: 0.22),
+                  minimumSize: const Size(80, 80),
+                  shape: const CircleBorder(),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _lang == 'en' ? 'Tap to preview' : 'Klepni pro přehrání',
+                style: const TextStyle(
+                    color: Spectrum.inkSoft, fontSize: 13),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => Navigator.pop(context, ''),
+                      icon: const Icon(Icons.delete_outline_rounded,
+                          size: 17),
+                      label:
+                          Text(_lang == 'en' ? 'Delete' : 'Smazat'),
+                      style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.redAccent,
+                          side: const BorderSide(
+                              color: Colors.redAccent)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: () =>
+                          Navigator.pop(context, _recordedPath),
+                      icon: const Icon(Icons.check_rounded, size: 17),
+                      label: Text(_lang == 'en' ? 'Use' : 'Použít'),
+                      style: FilledButton.styleFrom(
+                          backgroundColor: Spectrum.mint),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BigMicButton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _BigMicButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 88,
+        height: 88,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Spectrum.coral.withValues(alpha: 0.12),
+          border: Border.all(color: Spectrum.coral, width: 2),
+        ),
+        alignment: Alignment.center,
+        child: const Icon(Icons.mic_rounded,
+            size: 42, color: Spectrum.coral),
+      ),
+    );
+  }
+}
+
+class _PulsingRecordButton extends StatefulWidget {
+  final VoidCallback onTap;
+  const _PulsingRecordButton({required this.onTap});
+
+  @override
+  State<_PulsingRecordButton> createState() =>
+      _PulsingRecordButtonState();
+}
+
+class _PulsingRecordButtonState extends State<_PulsingRecordButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: widget.onTap,
+      child: AnimatedBuilder(
+        animation: _ctrl,
+        builder: (_, child) => Transform.scale(
+          scale: 1.0 + 0.1 * _ctrl.value,
+          child: child,
+        ),
+        child: Container(
+          width: 88,
+          height: 88,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.red,
+          ),
+          alignment: Alignment.center,
+          child: const Icon(Icons.stop_rounded,
+              size: 38, color: Colors.white),
+        ),
+      ),
+    );
   }
 }

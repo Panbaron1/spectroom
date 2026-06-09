@@ -21,6 +21,12 @@ extension ChallengeCategoryX on ChallengeCategory {
         ChallengeCategory.medical => 'Doktor',
         ChallengeCategory.routine => 'Rutina',
       };
+  String get labelEn => switch (this) {
+        ChallengeCategory.hygiene => 'Hygiene',
+        ChallengeCategory.medical => 'Medical',
+        ChallengeCategory.routine => 'Routine',
+      };
+  String label(String lang) => lang == 'en' ? labelEn : labelCs;
 }
 
 class ChallengeStep {
@@ -31,6 +37,7 @@ class ChallengeStep {
   final String labelEn; // secondary channel
   final int? count; // countdown only
   final int? durationSec; // timer only
+  final String? audioPath; // parent voice recording — absolute device path
 
   const ChallengeStep({
     required this.id,
@@ -40,7 +47,11 @@ class ChallengeStep {
     this.labelEn = '',
     this.count,
     this.durationSec,
+    this.audioPath,
   });
+
+  String label(String lang) =>
+      lang == 'en' && labelEn.isNotEmpty ? labelEn : labelCs;
 
   ChallengeStep copyWith({
     StepKind? kind,
@@ -49,6 +60,7 @@ class ChallengeStep {
     String? labelEn,
     int? count,
     int? durationSec,
+    String? audioPath,
   }) =>
       ChallengeStep(
         id: id,
@@ -58,6 +70,7 @@ class ChallengeStep {
         labelEn: labelEn ?? this.labelEn,
         count: count ?? this.count,
         durationSec: durationSec ?? this.durationSec,
+        audioPath: audioPath ?? this.audioPath,
       );
 
   Map<String, dynamic> toJson() => {
@@ -68,6 +81,7 @@ class ChallengeStep {
         'labelEn': labelEn,
         'count': count,
         'durationSec': durationSec,
+        'audioPath': audioPath,
       };
 
   factory ChallengeStep.fromJson(Map<String, dynamic> j) => ChallengeStep(
@@ -82,6 +96,7 @@ class ChallengeStep {
         labelEn: j['labelEn'] as String? ?? '',
         count: j['count'] as int?,
         durationSec: j['durationSec'] as int?,
+        audioPath: j['audioPath'] as String?,
       );
 }
 
@@ -105,6 +120,9 @@ class Challenge {
     required this.steps,
     this.builtIn = false,
   });
+
+  String title(String lang) =>
+      lang == 'en' && titleEn.isNotEmpty ? titleEn : titleCs;
 
   Challenge copyWith({
     String? titleCs,

@@ -42,6 +42,8 @@ dependencies:
   uuid: ^4.5.1                # ids for custom challenges/steps
   shared_preferences: ^2.3.2  # tiny flags (onboarding seen)
   flutter_animate: ^4.5.0     # staggered/spring motion (design identity)
+  audioplayers: ^6.0.0       # countdown tick + celebration chime + voice playback
+  record: ^7.0.0             # parent voice recording per step
 
 dev_dependencies:
   flutter_test:
@@ -69,6 +71,7 @@ flutter:
   assets:
     - assets/pictograms/   # Mulberry Symbols (CC BY-SA) - commercial-safe
     - assets/icons/        # AI-generated kawaii icon set
+    - assets/sounds/       # tick + chime WAVs
 
   fonts:
     - family: Geist         # clean, modern, Linear-style — UI + display
