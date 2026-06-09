@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../design/spectrum.dart';
 import '../models/challenge.dart';
 import '../models/pictogram_ref.dart';
 import '../theme.dart';
@@ -46,7 +47,8 @@ class _RunnerScreenState extends State<RunnerScreen> {
   Widget build(BuildContext context) {
     final steps = widget.challenge.steps;
     return Scaffold(
-      backgroundColor: _tint.withValues(alpha: 0.5),
+      backgroundColor:
+          Color.alphaBlend(_tint.withValues(alpha: 0.55), Spectrum.bg),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: Text(widget.challenge.titleCs),
@@ -423,96 +425,110 @@ class _TimerRunnerState extends State<_TimerRunner>
         AnimatedBuilder(
           animation: Listenable.merge([_ring, _breath]),
           builder: (context, _) {
-            final remaining = _ring.value; // 1 → 0
+            final remaining = _running ? (1 - _ring.value) : 1.0; // 1 → 0
             final secsLeft = (widget.seconds * remaining).ceil();
-            final breathe = _running ? 1 + 0.02 * math.sin(_breath.value * math.pi * 2) : 1.0;
-            // calm green/teal → soft warm as it nears the end
-            final arcColor = Color.lerp(
-                Palette.peach, widget.accent, remaining)!;
+            final breathe = _running
+                ? 1 + 0.015 * math.sin(_breath.value * math.pi * 2)
+                : 1.0;
+            final rotation = _running ? _ring.value * 0.6 : 0.0;
             return Transform.scale(
               scale: breathe,
               child: SizedBox(
-                width: 250,
-                height: 250,
-                child: CustomPaint(
-                  painter: _RingPainter(
-                    progress: _running ? remaining : 1,
-                    color: arcColor,
-                    track: widget.accent.withValues(alpha: 0.14),
-                  ),
-                  child: Center(
-                    child: Text(
+                width: 280,
+                height: 280,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // soft spectrum glow that fades as time drains
+                    Container(
+                      width: 240,
+                      height: 240,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(colors: [
+                          Spectrum.mint
+                              .withValues(alpha: 0.16 * remaining + 0.04),
+                          Colors.transparent,
+                        ]),
+                      ),
+                    ),
+                    CustomPaint(
+                      size: const Size(280, 280),
+                      painter: _SpectrumRingPainter(
+                          progress: remaining, rotation: rotation),
+                    ),
+                    Text(
                       _running ? _fmt(secsLeft) : _fmt(widget.seconds),
                       style: const TextStyle(
-                          fontSize: 58,
-                          fontWeight: FontWeight.w800,
-                          color: Palette.ink),
+                          fontFamily: 'Geist',
+                          fontSize: 56,
+                          fontWeight: FontWeight.w300,
+                          letterSpacing: -1.5,
+                          color: Spectrum.ink),
                     ),
-                  ),
+                  ],
                 ),
               ),
             );
           },
         ),
-        const SizedBox(height: 28),
+        const SizedBox(height: 32),
         if (!_running)
           FilledButton.icon(
             onPressed: _start,
             style: FilledButton.styleFrom(
-                backgroundColor: widget.accent,
-                minimumSize: const Size(180, 58)),
+                backgroundColor: Spectrum.ink,
+                minimumSize: const Size(180, 56)),
             icon: const Icon(Icons.play_arrow_rounded),
             label: const Text('Start'),
-          )
-        else
-          Text('Skoro hotovo…',
-              style: TextStyle(color: Palette.inkSoft, fontSize: 15)),
+          ),
       ],
     );
   }
 }
 
-class _RingPainter extends CustomPainter {
+/// The signature: a ring painted with the full Spectroom spectrum. The arc is
+/// the time remaining — as it drains, the spectrum recedes. Slow rotation keeps
+/// it alive and calm.
+class _SpectrumRingPainter extends CustomPainter {
   final double progress; // 1 → 0
-  final Color color, track;
-  _RingPainter(
-      {required this.progress, required this.color, required this.track});
+  final double rotation;
+  _SpectrumRingPainter({required this.progress, required this.rotation});
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = size.center(Offset.zero);
-    final radius = size.width / 2 - 14;
-    final stroke = 18.0;
+    final radius = size.width / 2 - 16;
+    const stroke = 16.0;
+    final rect = Rect.fromCircle(center: center, radius: radius);
 
-    final trackPaint = Paint()
-      ..color = track
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = stroke
-      ..strokeCap = StrokeCap.round;
-    canvas.drawCircle(center, radius, trackPaint);
+    // faint neutral track
+    canvas.drawCircle(
+        center,
+        radius,
+        Paint()
+          ..color = Spectrum.ink.withValues(alpha: 0.05)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = stroke
+          ..strokeCap = StrokeCap.round);
 
+    final start = -math.pi / 2 + rotation;
     final sweep = 2 * math.pi * progress.clamp(0.0, 1.0);
-    final arcPaint = Paint()
+    if (sweep <= 0.001) return;
+    final arc = Paint()
       ..shader = SweepGradient(
-        startAngle: -math.pi / 2,
-        endAngle: -math.pi / 2 + sweep,
-        colors: [color.withValues(alpha: 0.65), color],
-      ).createShader(Rect.fromCircle(center: center, radius: radius))
+        colors: Spectrum.sweep,
+        transform: GradientRotation(start),
+      ).createShader(rect)
       ..style = PaintingStyle.stroke
       ..strokeWidth = stroke
       ..strokeCap = StrokeCap.round;
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      -math.pi / 2,
-      sweep,
-      false,
-      arcPaint,
-    );
+    canvas.drawArc(rect, start, sweep, false, arc);
   }
 
   @override
-  bool shouldRepaint(_RingPainter old) =>
-      old.progress != progress || old.color != color;
+  bool shouldRepaint(_SpectrumRingPainter old) =>
+      old.progress != progress || old.rotation != rotation;
 }
 
 class _TimerPreview extends StatelessWidget {
@@ -524,22 +540,23 @@ class _TimerPreview extends StatelessWidget {
     final m = seconds ~/ 60, s = seconds % 60;
     final txt = m > 0 ? '$m min${s > 0 ? ' $s s' : ''}' : '$s s';
     return SizedBox(
-      width: 250,
-      height: 250,
+      width: 280,
+      height: 280,
       child: CustomPaint(
-        painter: _RingPainter(
-            progress: 1, color: accent, track: accent.withValues(alpha: 0.14)),
+        painter: _SpectrumRingPainter(progress: 1, rotation: 0),
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.timer_outlined, size: 54, color: accent),
+              const Icon(Icons.timer_outlined,
+                  size: 46, color: Spectrum.inkSoft),
               const SizedBox(height: 8),
               Text(txt,
                   style: const TextStyle(
+                      fontFamily: 'Geist',
                       fontSize: 26,
-                      fontWeight: FontWeight.w800,
-                      color: Palette.ink)),
+                      fontWeight: FontWeight.w500,
+                      color: Spectrum.ink)),
             ],
           ),
         ),

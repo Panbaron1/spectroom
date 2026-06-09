@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../data/prefs.dart';
+import '../design/spectrum.dart';
 import '../models/pictogram_ref.dart';
 import '../theme.dart';
 import '../widgets/pictogram_view.dart';
+import '../widgets/spectrum_mesh.dart';
 import 'home_screen.dart';
 
 /// First-launch intro: what Spectroom is and how the two modes work.
@@ -22,24 +24,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   static const _pages = <_Page>[
     _Page(
       symbol: 'star',
-      tint: Palette.tealTint,
-      accent: Palette.teal,
+      accent: Spectrum.mint,
       title: 'Vítej ve Spectroom',
       body:
           'Klidné vizuální rutiny, které pomáhají dítěti zvládnout těžké chvíle — stříhání nehtů, zubaře, oblékání — krok za krokem, s obrázky.',
     ),
     _Page(
       symbol: 'read',
-      tint: Palette.lavenderTint,
-      accent: Palette.lavender,
+      accent: Spectrum.lavender,
       title: 'Nejdřív se podíváme',
       body:
           'V klidovém režimu si rutinu projdete dopředu. Obrázek po obrázku ukáže, co se bude dít. Žádná překvapení — to pomáhá nejvíc.',
     ),
     _Page(
       symbol: 'clip_nails',
-      tint: Palette.peachTint,
-      accent: Palette.peach,
+      accent: Spectrum.amber,
       title: 'Pak to zvládneme',
       body:
           'V živém režimu vás appka provede krok za krokem. Odpočítávání a klidný časovač pomůžou dítěti zvládnout to skoro samo.',
@@ -72,15 +71,33 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     final last = _page == _pages.length - 1;
     return Scaffold(
-      body: SafeArea(
+      body: Stack(
+        children: [
+          const Positioned.fill(child: SpectrumMesh(intensity: 0.55)),
+          SafeArea(
         child: Column(
           children: [
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: _finish,
-                child: Text(last ? '' : 'Přeskočit',
-                    style: const TextStyle(color: Palette.inkSoft)),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 10, 8, 0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  ShaderMask(
+                    shaderCallback: (r) => Spectrum.brand.createShader(r),
+                    child: const Text('Spectroom',
+                        style: TextStyle(
+                            fontFamily: 'Geist',
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.5,
+                            color: Colors.white)),
+                  ),
+                  TextButton(
+                    onPressed: _finish,
+                    child: Text(last ? '' : 'Přeskočit',
+                        style: const TextStyle(color: Spectrum.inkSoft)),
+                  ),
+                ],
               ),
             ),
             Expanded(
@@ -125,18 +142,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ],
         ),
       ),
+        ],
+      ),
     );
   }
 }
 
 class _Page {
   final String symbol, title, body;
-  final Color tint, accent;
+  final Color accent;
   const _Page(
       {required this.symbol,
       required this.title,
       required this.body,
-      required this.tint,
       required this.accent});
 }
 
@@ -151,18 +169,37 @@ class _PageView extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          PictogramTile(PictogramRef.mulberry(page.symbol),
-              size: 180, tint: page.tint),
-          const SizedBox(height: 40),
+          Container(
+            width: 196,
+            height: 196,
+            decoration: BoxDecoration(
+              color: Spectrum.surface,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                    color: page.accent.withValues(alpha: 0.28),
+                    blurRadius: 48,
+                    offset: const Offset(0, 18)),
+              ],
+            ),
+            child: Center(
+              child: PictogramView(
+                  PictogramRef.mulberry(page.symbol), size: 108),
+            ),
+          ),
+          const SizedBox(height: 44),
           Text(page.title,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                  fontSize: 30, fontWeight: FontWeight.w800, color: Palette.ink)),
+                  fontSize: 30,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.5,
+                  color: Spectrum.ink)),
           const SizedBox(height: 16),
           Text(page.body,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                  fontSize: 17, height: 1.5, color: Palette.inkSoft)),
+                  fontSize: 16.5, height: 1.55, color: Spectrum.inkSoft)),
         ],
       ),
     );

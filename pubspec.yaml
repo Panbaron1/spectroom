@@ -41,6 +41,7 @@ dependencies:
   path_provider: ^2.1.4       # on-device app docs dir for challenges + photos
   uuid: ^4.5.1                # ids for custom challenges/steps
   shared_preferences: ^2.3.2  # tiny flags (onboarding seen)
+  flutter_animate: ^4.5.0     # staggered/spring motion (design identity)
 
 dev_dependencies:
   flutter_test:
@@ -68,7 +69,10 @@ flutter:
     - assets/pictograms/   # Mulberry Symbols (CC BY-SA) - commercial-safe
 
   fonts:
-    - family: Nunito        # rounded, friendly, calm — bundled (no network)
+    - family: Geist         # clean, modern, Linear-style — UI + display
+      fonts:
+        - asset: assets/fonts/Geist.ttf
+    - family: Nunito        # kept for fallback/soft contexts
       fonts:
         - asset: assets/fonts/Nunito.ttf
         - asset: assets/fonts/Nunito-Italic.ttf

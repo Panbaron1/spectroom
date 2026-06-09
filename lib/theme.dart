@@ -1,88 +1,91 @@
 import 'package:flutter/material.dart';
 
+import 'design/spectrum.dart';
 import 'models/challenge.dart';
 
-/// Spectroom palette — calming, low-saturation, warm. The visual quiet is part
-/// of the product: predictable, soft, no overstimulation.
+/// Back-compat palette facade — existing screens reference Palette.*, now backed
+/// by the Spectrum brand. New work should use Spectrum directly.
 class Palette {
-  static const bg = Color(0xFFF3F6F4); // warm off-white with a hint of mint
-  static const surface = Color(0xFFFFFFFF);
-  static const ink = Color(0xFF2E3A40); // deep slate, softer than black
-  static const inkSoft = Color(0xFF6B7A80);
+  static const bg = Spectrum.bg;
+  static const surface = Spectrum.surface;
+  static const ink = Spectrum.ink;
+  static const inkSoft = Spectrum.inkSoft;
 
-  static const teal = Color(0xFF5FA89E); // hygiene / primary
-  static const lavender = Color(0xFF9B8FD4); // medical
-  static const peach = Color(0xFFE8A87C); // routine
+  static const teal = Spectrum.primary;
+  static const lavender = Spectrum.lavender;
+  static const peach = Spectrum.amber;
 
-  // Soft background tints per category (for cards / runner backdrops)
-  static const tealTint = Color(0xFFE3F1EE);
-  static const lavenderTint = Color(0xFFECE8F7);
-  static const peachTint = Color(0xFFFBEADF);
+  static final tealTint = Spectrum.tint(Spectrum.mint);
+  static final lavenderTint = Spectrum.tint(Spectrum.lavender);
+  static final peachTint = Spectrum.tint(Spectrum.amber);
 
-  static Color of(ChallengeCategory c) => switch (c) {
-        ChallengeCategory.hygiene => teal,
-        ChallengeCategory.medical => lavender,
-        ChallengeCategory.routine => peach,
-      };
+  static Color of(ChallengeCategory c) => Spectrum.accent(c);
+  static Color tintOf(ChallengeCategory c) => Spectrum.accentTint(c);
+}
 
-  static Color tintOf(ChallengeCategory c) => switch (c) {
-        ChallengeCategory.hygiene => tealTint,
-        ChallengeCategory.medical => lavenderTint,
-        ChallengeCategory.routine => peachTint,
-      };
+/// Spacing / radius tokens — never eyeball values.
+class Gap {
+  static const xs = 6.0, sm = 10.0, md = 16.0, lg = 24.0, xl = 36.0;
+}
+
+class Radii {
+  static const sm = 14.0, md = 20.0, lg = 28.0, xl = 36.0;
 }
 
 ThemeData buildSpectroomTheme() {
   final scheme = ColorScheme.fromSeed(
-    seedColor: Palette.teal,
+    seedColor: Spectrum.primary,
     brightness: Brightness.light,
-  ).copyWith(
-    surface: Palette.surface,
-    primary: Palette.teal,
-    onSurface: Palette.ink,
-  );
+  ).copyWith(surface: Spectrum.surface, onSurface: Spectrum.ink);
 
-  TextTheme nun(TextTheme base) => base
-      .apply(fontFamily: 'Nunito', bodyColor: Palette.ink, displayColor: Palette.ink);
+  TextTheme geist(TextTheme b) => b.apply(
+      fontFamily: 'Geist',
+      bodyColor: Spectrum.ink,
+      displayColor: Spectrum.ink);
 
   return ThemeData(
     useMaterial3: true,
-    fontFamily: 'Nunito',
+    fontFamily: 'Geist',
     colorScheme: scheme,
-    scaffoldBackgroundColor: Palette.bg,
-    textTheme: nun(ThemeData.light().textTheme),
+    scaffoldBackgroundColor: Spectrum.bg,
+    textTheme: geist(ThemeData.light().textTheme),
     appBarTheme: const AppBarTheme(
-      backgroundColor: Palette.bg,
-      foregroundColor: Palette.ink,
+      backgroundColor: Colors.transparent,
+      foregroundColor: Spectrum.ink,
       centerTitle: true,
       elevation: 0,
       titleTextStyle: TextStyle(
-        fontFamily: 'Nunito',
-        fontSize: 22,
-        fontWeight: FontWeight.w800,
-        color: Palette.ink,
+        fontFamily: 'Geist',
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        letterSpacing: -0.2,
+        color: Spectrum.ink,
       ),
     ),
     cardTheme: CardThemeData(
       elevation: 0,
-      color: Palette.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      color: Spectrum.surface,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(Radii.lg)),
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        backgroundColor: Palette.teal,
+        backgroundColor: Spectrum.ink,
         foregroundColor: Colors.white,
-        minimumSize: const Size(64, 58),
+        minimumSize: const Size(64, 56),
         textStyle: const TextStyle(
-            fontFamily: 'Nunito', fontSize: 19, fontWeight: FontWeight.w800),
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+            fontFamily: 'Geist',
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.1),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(Radii.md)),
       ),
     ),
     inputDecorationTheme: const InputDecorationTheme(
       border: UnderlineInputBorder(),
       focusedBorder: UnderlineInputBorder(
-        borderSide: BorderSide(color: Palette.teal, width: 2),
+        borderSide: BorderSide(color: Spectrum.primary, width: 2),
       ),
     ),
   );

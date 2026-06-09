@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../models/pictogram_ref.dart';
-import '../theme.dart';
 
 /// Central renderer for every pictogram. The ONE place that knows how each
 /// [PictogramKind] is drawn — swapping the symbol library means editing only
@@ -60,7 +59,7 @@ class PictogramTile extends StatelessWidget {
     this.ref, {
     super.key,
     this.size = 96,
-    this.tint = Palette.tealTint,
+    this.tint = const Color(0xFFEDF4F0),
     this.radiusFactor = 0.26,
   });
 
