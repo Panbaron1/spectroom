@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../models/pictogram_ref.dart';
+import '../theme.dart';
 
 /// Central renderer for every pictogram. The ONE place that knows how each
 /// [PictogramKind] is drawn — swapping the symbol library means editing only
@@ -25,8 +26,7 @@ class PictogramView extends StatelessWidget {
           'assets/pictograms/${ref.value}.svg',
           width: size,
           height: size,
-          placeholderBuilder: (_) =>
-              _fallback(size, Icons.image_outlined),
+          placeholderBuilder: (_) => _fallback(size, Icons.image_outlined),
         );
 
       case PictogramKind.photo:
@@ -47,4 +47,34 @@ class PictogramView extends StatelessWidget {
 
   Widget _fallback(double size, IconData icon) =>
       Icon(icon, size: size * 0.7, color: Colors.black26);
+}
+
+/// A pictogram inside a soft, rounded, tinted tile — the standard visual unit.
+class PictogramTile extends StatelessWidget {
+  final PictogramRef ref;
+  final double size;
+  final Color tint;
+  final double radiusFactor;
+
+  const PictogramTile(
+    this.ref, {
+    super.key,
+    this.size = 96,
+    this.tint = Palette.tealTint,
+    this.radiusFactor = 0.26,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      padding: EdgeInsets.all(size * 0.12),
+      decoration: BoxDecoration(
+        color: tint,
+        borderRadius: BorderRadius.circular(size * radiusFactor),
+      ),
+      child: Center(child: PictogramView(ref, size: size * 0.76)),
+    );
+  }
 }

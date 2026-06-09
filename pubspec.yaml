@@ -40,6 +40,7 @@ dependencies:
   image_picker: ^1.1.2        # parent camera/gallery photos per step
   path_provider: ^2.1.4       # on-device app docs dir for challenges + photos
   uuid: ^4.5.1                # ids for custom challenges/steps
+  shared_preferences: ^2.3.2  # tiny flags (onboarding seen)
 
 dev_dependencies:
   flutter_test:
@@ -65,6 +66,13 @@ flutter:
 
   assets:
     - assets/pictograms/   # Mulberry Symbols (CC BY-SA) - commercial-safe
+
+  fonts:
+    - family: Nunito        # rounded, friendly, calm — bundled (no network)
+      fonts:
+        - asset: assets/fonts/Nunito.ttf
+        - asset: assets/fonts/Nunito-Italic.ttf
+          style: italic
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 
 import 'data/challenge_store.dart';
+import 'data/prefs.dart';
 import 'screens/home_screen.dart';
+import 'screens/onboarding_screen.dart';
 import 'theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await ChallengeStore.instance.load();
-  runApp(const SpectroomApp());
+  final seen = await Prefs.seenOnboarding();
+  runApp(SpectroomApp(showOnboarding: !seen));
 }
 
 class SpectroomApp extends StatelessWidget {
-  const SpectroomApp({super.key});
+  final bool showOnboarding;
+  const SpectroomApp({super.key, required this.showOnboarding});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +23,7 @@ class SpectroomApp extends StatelessWidget {
       title: 'Spectroom',
       debugShowCheckedModeBanner: false,
       theme: buildSpectroomTheme(),
-      home: const HomeScreen(),
+      home: showOnboarding ? const OnboardingScreen() : const HomeScreen(),
     );
   }
 }

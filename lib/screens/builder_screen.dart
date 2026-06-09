@@ -6,8 +6,10 @@ import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
 import '../data/challenge_store.dart';
+import '../data/mulberry.dart';
 import '../models/challenge.dart';
 import '../models/pictogram_ref.dart';
+import '../theme.dart';
 import '../widgets/pictogram_view.dart';
 
 const _uuid = Uuid();
@@ -39,7 +41,7 @@ class _BuilderScreenState extends State<BuilderScreen> {
     _titleCs = TextEditingController(text: e?.titleCs ?? '');
     _titleEn = TextEditingController(text: e?.titleEn ?? '');
     _category = e?.category ?? ChallengeCategory.routine;
-    _cover = e?.cover ?? const PictogramRef.emoji('⭐');
+    _cover = e?.cover ?? const PictogramRef.mulberry('star');
     _steps = (e?.steps ?? <ChallengeStep>[])
         .map(_StepDraft.from)
         .toList();
@@ -277,6 +279,10 @@ class _PictogramPicker extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
+                leading: const Icon(Icons.grid_view_rounded),
+                title: const Text('Symbol (Mulberry)'),
+                onTap: () => Navigator.pop(ctx, 'symbol')),
+            ListTile(
                 leading: const Icon(Icons.emoji_emotions_outlined),
                 title: const Text('Emoji'),
                 onTap: () => Navigator.pop(ctx, 'emoji')),
@@ -293,6 +299,15 @@ class _PictogramPicker extends StatelessWidget {
       ),
     );
     if (choice == null || !context.mounted) return;
+
+    if (choice == 'symbol') {
+      final name = await Navigator.push<String>(
+        context,
+        MaterialPageRoute(builder: (_) => const _SymbolPickerScreen()),
+      );
+      if (name != null) onChanged(PictogramRef.mulberry(name));
+      return;
+    }
 
     if (choice == 'emoji') {
       final emoji = await _askEmoji(context);
@@ -366,6 +381,72 @@ class _PictogramPicker extends StatelessWidget {
   }
 }
 
+// ── Mulberry symbol picker ───────────────────────────────────
+class _SymbolPickerScreen extends StatefulWidget {
+  const _SymbolPickerScreen();
+  @override
+  State<_SymbolPickerScreen> createState() => _SymbolPickerScreenState();
+}
+
+class _SymbolPickerScreenState extends State<_SymbolPickerScreen> {
+  List<String> _all = [];
+  String _query = '';
+
+  @override
+  void initState() {
+    super.initState();
+    bundledMulberrySymbols().then((s) {
+      if (mounted) setState(() => _all = s);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final items = _query.isEmpty
+        ? _all
+        : _all.where((s) => s.contains(_query.toLowerCase())).toList();
+    return Scaffold(
+      appBar: AppBar(title: const Text('Vyber symbol')),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: TextField(
+              autofocus: true,
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.search_rounded),
+                hintText: 'Hledat (anglicky): tooth, sock, door…',
+              ),
+              onChanged: (v) => setState(() => _query = v.trim()),
+            ),
+          ),
+          Expanded(
+            child: GridView.builder(
+              padding: const EdgeInsets.all(16),
+              gridDelegate:
+                  const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+              ),
+              itemCount: items.length,
+              itemBuilder: (context, i) => InkWell(
+                borderRadius: BorderRadius.circular(20),
+                onTap: () => Navigator.pop(context, items[i]),
+                child: PictogramTile(
+                  PictogramRef.mulberry(items[i]),
+                  size: 72,
+                  tint: Palette.tealTint,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 // ── Draft holds editable controllers per step ────────────────
 class _StepDraft {
   final String key;
@@ -387,7 +468,7 @@ class _StepDraft {
   factory _StepDraft.blank() => _StepDraft(
         key: _uuid.v4(),
         kind: StepKind.info,
-        pictogram: const PictogramRef.emoji('⭐'),
+        pictogram: const PictogramRef.mulberry('star'),
         labelCs: TextEditingController(),
         count: TextEditingController(text: '10'),
         duration: TextEditingController(text: '60'),
