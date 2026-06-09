@@ -85,6 +85,21 @@ final List<Challenge> seedChallenges = [
     ],
   ),
   Challenge(
+    id: 'seed.handwash',
+    titleCs: 'Mytí rukou',
+    titleEn: 'Wash hands',
+    category: ChallengeCategory.hygiene,
+    cover: const PictogramRef.asset('faucet'),
+    steps: [
+      const ChallengeStep(id: 'handwash.1', kind: StepKind.info, pictogram: PictogramRef.asset('faucet'), labelCs: 'Pustíme vodu', labelEn: 'Turn on water'),
+      const ChallengeStep(id: 'handwash.2', kind: StepKind.info, pictogram: PictogramRef.asset('hands'), labelCs: 'Namočíme ruce', labelEn: 'Wet hands'),
+      const ChallengeStep(id: 'handwash.3', kind: StepKind.info, pictogram: PictogramRef.asset('soap'), labelCs: 'Mýdlo', labelEn: 'Soap'),
+      const ChallengeStep(id: 'handwash.4', kind: StepKind.timer, pictogram: PictogramRef.asset('hands'), labelCs: 'Myjeme ruce', labelEn: 'Wash hands', durationSec: 20),
+      const ChallengeStep(id: 'handwash.5', kind: StepKind.info, pictogram: PictogramRef.asset('rinse'), labelCs: 'Opláchnutí', labelEn: 'Rinse'),
+      const ChallengeStep(id: 'handwash.6', kind: StepKind.info, pictogram: PictogramRef.asset('towel'), labelCs: 'Utřeme ruce', labelEn: 'Dry hands'),
+    ],
+  ),
+  Challenge(
     id: 'seed.bath',
     titleCs: 'Koupání',
     titleEn: 'Bath time',
