@@ -17,12 +17,14 @@ class ChallengeStore extends ChangeNotifier {
   final List<Challenge> _custom = [];
   bool _loaded = false;
 
-  /// Seeds first, then parent-created (seeds win on ID clash).
+  /// Seeds in fixed order; custom version overrides seed when IDs match
+  /// (so voice recordings saved on a built-in are preserved). Pure custom
+  /// challenges appended after seeds.
   List<Challenge> get all {
-    final seedIds = seedChallenges.map((c) => c.id).toSet();
+    final customById = Map.fromEntries(_custom.map((c) => MapEntry(c.id, c)));
     return [
-      ...seedChallenges,
-      ..._custom.where((c) => !seedIds.contains(c.id)),
+      ...seedChallenges.map((s) => customById[s.id] ?? s),
+      ..._custom.where((c) => !seedChallenges.any((s) => s.id == c.id)),
     ];
   }
 
