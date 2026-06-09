@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../data/challenge_store.dart';
+import '../design/spectrum.dart';
 import '../models/challenge.dart';
 import '../theme.dart';
 import '../widgets/pictogram_view.dart';
@@ -18,11 +19,11 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openBuilder(context, null),
-        backgroundColor: Palette.teal,
+        backgroundColor: Spectrum.ink,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add_rounded),
         label: const Text('Nová výzva',
-            style: TextStyle(fontWeight: FontWeight.w800)),
+            style: TextStyle(fontWeight: FontWeight.w600)),
       ),
       body: AnimatedBuilder(
         animation: store,
@@ -30,45 +31,56 @@ class HomeScreen extends StatelessWidget {
           final items = store.all;
           return CustomScrollView(
             slivers: [
-              SliverAppBar(
-                pinned: true,
-                backgroundColor: Palette.bg,
-                surfaceTintColor: Colors.transparent,
-                expandedHeight: 116,
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.info_outline_rounded),
-                    onPressed: () => _showAbout(context),
-                  ),
-                ],
-                flexibleSpace: const FlexibleSpaceBar(
-                  titlePadding: EdgeInsets.only(left: 20, bottom: 14),
-                  title: Text('Spectroom',
-                      style: TextStyle(
-                          fontWeight: FontWeight.w800, color: Palette.ink)),
-                ),
-                bottom: const PreferredSize(
-                  preferredSize: Size.fromHeight(28),
+              SliverToBoxAdapter(
+                child: SafeArea(
+                  bottom: false,
                   child: Padding(
-                    padding: EdgeInsets.only(left: 20, bottom: 10, right: 20),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text('Klidně si projdi, co nás čeká.',
-                          style:
-                              TextStyle(color: Palette.inkSoft, fontSize: 15)),
+                    padding: const EdgeInsets.fromLTRB(
+                        Gap.lg, Gap.lg, Gap.sm, Gap.md),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ShaderMask(
+                                shaderCallback: (r) =>
+                                    Spectrum.brand.createShader(r),
+                                child: const Text('Spectroom',
+                                    style: TextStyle(
+                                        fontFamily: 'Geist',
+                                        fontSize: 32,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: -1,
+                                        color: Colors.white)),
+                              ),
+                              const SizedBox(height: 4),
+                              const Text('Klidně si projdi, co nás čeká.',
+                                  style: TextStyle(
+                                      fontSize: 15, color: Spectrum.inkSoft)),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.info_outline_rounded),
+                          color: Spectrum.inkSoft,
+                          onPressed: () => _showAbout(context),
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                padding: const EdgeInsets.fromLTRB(Gap.md, 0, Gap.md, 110),
                 sliver: SliverGrid(
                   gridDelegate:
                       const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    mainAxisSpacing: 16,
-                    crossAxisSpacing: 16,
-                    childAspectRatio: 0.86,
+                    mainAxisSpacing: Gap.md,
+                    crossAxisSpacing: Gap.md,
+                    childAspectRatio: 0.84,
                   ),
                   delegate: SliverChildBuilderDelegate(
                     (context, i) => _ChallengeCard(challenge: items[i]),
@@ -90,48 +102,65 @@ class _ChallengeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = Palette.of(challenge.category);
-    final tint = Palette.tintOf(challenge.category);
-    return Card(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(24),
-        onTap: () => _pickMode(context, challenge),
-        onLongPress:
-            challenge.builtIn ? null : () => _openBuilder(context, challenge),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Center(
-                  child: PictogramTile(challenge.cover, size: 110, tint: tint),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                challenge.titleCs,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration:
-                        BoxDecoration(color: accent, shape: BoxShape.circle),
+    final accent = Spectrum.accent(challenge.category);
+    final tint = Spectrum.accentTint(challenge.category);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Spectrum.surface,
+        borderRadius: BorderRadius.circular(Radii.lg),
+        boxShadow: [
+          BoxShadow(
+              color: Spectrum.ink.withValues(alpha: 0.05),
+              blurRadius: 22,
+              offset: const Offset(0, 10)),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(Radii.lg),
+          onTap: () => _pickMode(context, challenge),
+          onLongPress: challenge.builtIn
+              ? null
+              : () => _openBuilder(context, challenge),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Center(
+                    child: PictogramTile(challenge.cover,
+                        size: 112, tint: tint),
                   ),
-                  const SizedBox(width: 6),
-                  Text('${challenge.steps.length} kroků',
-                      style:
-                          const TextStyle(fontSize: 13, color: Palette.inkSoft)),
-                ],
-              ),
-            ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  challenge.titleCs,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.3),
+                ),
+                const SizedBox(height: 5),
+                Row(
+                  children: [
+                    Container(
+                      width: 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                          color: accent, shape: BoxShape.circle),
+                    ),
+                    const SizedBox(width: 6),
+                    Text('${challenge.steps.length} kroků',
+                        style: const TextStyle(
+                            fontSize: 13, color: Spectrum.inkSoft)),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -140,24 +169,27 @@ class _ChallengeCard extends StatelessWidget {
 }
 
 void _pickMode(BuildContext context, Challenge c) {
-  final accent = Palette.of(c.category);
+  final accent = Spectrum.accent(c.category);
   showModalBottomSheet(
     context: context,
     showDragHandle: true,
-    backgroundColor: Palette.surface,
+    backgroundColor: Spectrum.surface,
     shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(Radii.lg))),
     builder: (ctx) => SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+        padding: const EdgeInsets.fromLTRB(Gap.lg, 0, Gap.lg, Gap.lg),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            PictogramTile(c.cover, size: 76, tint: Palette.tintOf(c.category)),
-            const SizedBox(height: 12),
+            PictogramTile(c.cover,
+                size: 80, tint: Spectrum.accentTint(c.category)),
+            const SizedBox(height: 14),
             Text(c.titleCs,
                 style: const TextStyle(
-                    fontSize: 22, fontWeight: FontWeight.w800)),
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.4)),
             const SizedBox(height: 20),
             FilledButton.tonalIcon(
               onPressed: () {
@@ -167,9 +199,9 @@ void _pickMode(BuildContext context, Challenge c) {
               icon: const Icon(Icons.menu_book_rounded),
               label: const Text('Podívat se předem'),
               style: FilledButton.styleFrom(
-                  backgroundColor: Palette.tintOf(c.category),
-                  foregroundColor: Palette.ink,
-                  minimumSize: const Size.fromHeight(60)),
+                  backgroundColor: Spectrum.accentTint(c.category),
+                  foregroundColor: Spectrum.ink,
+                  minimumSize: const Size.fromHeight(58)),
             ),
             const SizedBox(height: 12),
             FilledButton.icon(
@@ -181,7 +213,8 @@ void _pickMode(BuildContext context, Challenge c) {
               label: const Text('Děláme to teď'),
               style: FilledButton.styleFrom(
                   backgroundColor: accent,
-                  minimumSize: const Size.fromHeight(60)),
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size.fromHeight(58)),
             ),
           ],
         ),
@@ -194,14 +227,14 @@ void _showAbout(BuildContext context) {
   showAboutDialog(
     context: context,
     applicationName: 'Spectroom',
-    applicationVersion: '0.1',
+    applicationVersion: '0.3',
     children: const [
       SizedBox(height: 8),
       Text(
           'Klidné vizuální rutiny a sociální příběhy — pomáhají projít těžké chvíle krok za krokem.'),
       SizedBox(height: 12),
       Text('Pictograms: Mulberry Symbols (Straight Street), CC BY-SA 4.0.',
-          style: TextStyle(fontSize: 12, color: Palette.inkSoft)),
+          style: TextStyle(fontSize: 12, color: Spectrum.inkSoft)),
     ],
   );
 }
@@ -209,8 +242,7 @@ void _showAbout(BuildContext context) {
 void _run(BuildContext context, Challenge c, {required bool live}) {
   Navigator.push(
     context,
-    MaterialPageRoute(
-        builder: (_) => RunnerScreen(challenge: c, live: live)),
+    MaterialPageRoute(builder: (_) => RunnerScreen(challenge: c, live: live)),
   );
 }
 
