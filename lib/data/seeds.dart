@@ -29,7 +29,7 @@ final List<Challenge> seedChallenges = [
       const ChallengeStep(id: 'dentist.3', kind: StepKind.info, pictogram: PictogramRef.asset('sit'), labelCs: 'Sedíš u maminky na klíně', labelEn: 'You sit on mummy\'s lap'),
       const ChallengeStep(id: 'dentist.4', kind: StepKind.info, pictogram: PictogramRef.asset('dentist'), labelCs: 'Sloní chobot pije vodu, foukátko fouká', labelEn: 'Elephant trunk drinks water, blower blows air'),
       const ChallengeStep(id: 'dentist.5', kind: StepKind.countdown, pictogram: PictogramRef.asset('dentist_look'), labelCs: 'Spočítáme všechny zoubky!', labelEn: 'Let\'s count all your teeth!', count: 20),
-      const ChallengeStep(id: 'dentist.6', kind: StepKind.info, pictogram: PictogramRef.asset('stickers'), labelCs: 'Vyber si odměnu z krabičky!', labelEn: 'Pick a reward from the box!'),
+      const ChallengeStep(id: 'dentist.6', kind: StepKind.info, pictogram: PictogramRef.asset('reward_box'), labelCs: 'Vyber si odměnu z krabičky!', labelEn: 'Pick a reward from the box!'),
       const ChallengeStep(id: 'dentist.7', kind: StepKind.info, pictogram: PictogramRef.asset('star'), labelCs: 'Byl jsi skvělý!', labelEn: 'You were amazing!'),
     ],
   ),
