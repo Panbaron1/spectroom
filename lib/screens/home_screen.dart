@@ -29,6 +29,21 @@ class _HomeScreenState extends State<HomeScreen> {
   String _query = '';
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Pre-decode all seed cover icons so first-scroll has no decode stutter.
+    for (final c in ChallengeStore.instance.all) {
+      final ref = c.cover;
+      if (ref.kind == PictogramKind.asset) {
+        precacheImage(
+          AssetImage('assets/icons/${ref.value}.png'),
+          context,
+        );
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final store = ChallengeStore.instance;
     return AnimatedBuilder(
@@ -51,6 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: const TextStyle(fontWeight: FontWeight.w600)),
           ),
           body: CustomScrollView(
+            cacheExtent: 900,
             slivers: [
               SliverToBoxAdapter(
                 child: SafeArea(
@@ -203,9 +219,9 @@ class _ChallengeCardState extends State<_ChallengeCard> {
         borderRadius: BorderRadius.circular(Radii.lg),
         boxShadow: [
           BoxShadow(
-              color: Spectrum.ink.withValues(alpha: 0.05),
-              blurRadius: 22,
-              offset: const Offset(0, 10)),
+              color: Spectrum.ink.withValues(alpha: 0.07),
+              blurRadius: 6,
+              offset: const Offset(0, 3)),
         ],
       ),
       child: Material(
