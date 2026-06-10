@@ -81,4 +81,23 @@ class ChallengeStore extends ChangeNotifier {
     await _persist();
     notifyListeners();
   }
+
+  /// Serialises all custom data (seed overrides + new challenges) to JSON.
+  String exportJson() =>
+      jsonEncode(_custom.map((c) => c.toJson()).toList());
+
+  /// Merges challenges from a JSON string. Skips malformed entries.
+  /// Returns number of challenges imported.
+  Future<int> importJson(String rawJson) async {
+    final list = jsonDecode(rawJson) as List<dynamic>;
+    int count = 0;
+    for (final e in list) {
+      try {
+        final c = Challenge.fromJson(e as Map<String, dynamic>);
+        await upsert(c);
+        count++;
+      } catch (_) {}
+    }
+    return count;
+  }
 }

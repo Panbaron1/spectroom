@@ -456,6 +456,15 @@ class _TimerRunnerState extends State<_TimerRunner>
       vsync: this, duration: const Duration(milliseconds: 2600))
     ..repeat(reverse: true);
   bool _running = false;
+  bool _displayMinSec = true;
+
+  @override
+  void initState() {
+    super.initState();
+    Prefs.timerDisplayMinSec().then((v) {
+      if (mounted) setState(() => _displayMinSec = v);
+    });
+  }
 
   void _start() {
     if (_running) return;
@@ -477,8 +486,9 @@ class _TimerRunnerState extends State<_TimerRunner>
     super.dispose();
   }
 
-  String _fmt(int s) =>
-      '${s ~/ 60}:${(s % 60).toString().padLeft(2, '0')}';
+  String _fmt(int s) => _displayMinSec
+      ? '${s ~/ 60}:${(s % 60).toString().padLeft(2, '0')}'
+      : '$s';
 
   @override
   Widget build(BuildContext context) {

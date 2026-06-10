@@ -55,6 +55,7 @@ class Prefs {
 
   static const _kTimerSec = 'standalone_timer_sec_v1';
   static const _kCountdownN = 'standalone_countdown_n_v1';
+  static const _kTimerDisplayMinSec = 'timer_display_min_sec_v1';
 
   static Future<int> standaloneTimerSec() async {
     final p = await SharedPreferences.getInstance();
@@ -74,5 +75,16 @@ class Prefs {
   static Future<void> setStandaloneCountdownN(int n) async {
     final p = await SharedPreferences.getInstance();
     await p.setInt(_kCountdownN, n);
+  }
+
+  /// true = min:sec format (e.g. "2:30"), false = total seconds (e.g. "150")
+  static Future<bool> timerDisplayMinSec() async {
+    final p = await SharedPreferences.getInstance();
+    return p.getBool(_kTimerDisplayMinSec) ?? true;
+  }
+
+  static Future<void> setTimerDisplayMinSec(bool v) async {
+    final p = await SharedPreferences.getInstance();
+    await p.setBool(_kTimerDisplayMinSec, v);
   }
 }

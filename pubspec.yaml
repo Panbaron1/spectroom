@@ -44,6 +44,7 @@ dependencies:
   flutter_animate: ^4.5.0     # staggered/spring motion (design identity)
   audioplayers: ^6.0.0       # countdown tick + celebration chime + voice playback
   record: ^7.0.0             # parent voice recording per step
+  share_plus: ^13.1.0
 
 dev_dependencies:
   flutter_test:

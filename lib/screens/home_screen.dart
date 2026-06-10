@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../data/challenge_store.dart';
 import '../data/lang_store.dart';
@@ -364,7 +368,10 @@ class _SettingsSheet extends StatefulWidget {
 class _SettingsSheetState extends State<_SettingsSheet> {
   int _timerSec = 300;
   int _countdownN = 10;
+  bool _timerDisplayMinSec = true;
   bool _loaded = false;
+  bool _exporting = false;
+  bool _importing = false;
   late final TextEditingController _vocativeCtrl;
 
   @override
@@ -375,12 +382,14 @@ class _SettingsSheetState extends State<_SettingsSheet> {
       Prefs.standaloneTimerSec(),
       Prefs.standaloneCountdownN(),
       Prefs.kidVocative(),
+      Prefs.timerDisplayMinSec(),
     ]).then((vals) {
       if (mounted) {
         setState(() {
           _timerSec = vals[0] as int;
           _countdownN = vals[1] as int;
           _vocativeCtrl.text = vals[2] as String;
+          _timerDisplayMinSec = vals[3] as bool;
           _loaded = true;
         });
       }
@@ -463,6 +472,82 @@ class _SettingsSheetState extends State<_SettingsSheet> {
     ));
   }
 
+  Future<void> _doExport(BuildContext ctx) async {
+    setState(() => _exporting = true);
+    try {
+      final json = ChallengeStore.instance.exportJson();
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/spectroom_backup.json');
+      await file.writeAsString(json);
+      await Share.shareXFiles(
+        [XFile(file.path, mimeType: 'application/json')],
+        subject: 'Spectroom backup',
+      );
+    } catch (e) {
+      if (ctx.mounted) {
+        ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
+          content: Text('Export failed: $e'),
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
+  }
+
+  Future<void> _doImport(BuildContext ctx) async {
+    final lang = LangStore.instance.lang;
+    final ctrl = TextEditingController();
+    final ok = await showDialog<bool>(
+      context: ctx,
+      builder: (dctx) => AlertDialog(
+        title: Text(lang == 'en' ? 'Restore backup' : 'Obnovit zálohu'),
+        content: TextField(
+          controller: ctrl,
+          maxLines: 6,
+          decoration: InputDecoration(
+            hintText: 'Paste JSON here…',
+            hintStyle: const TextStyle(color: Spectrum.inkSoft),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(Radii.sm),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(dctx, false),
+              child: Text(lang == 'en' ? 'Cancel' : 'Zrušit')),
+          FilledButton(
+              onPressed: () => Navigator.pop(dctx, true),
+              child: Text(lang == 'en' ? 'Import' : 'Importovat')),
+        ],
+      ),
+    );
+    ctrl.dispose();
+    if (ok != true || ctrl.text.trim().isEmpty) return;
+    setState(() => _importing = true);
+    try {
+      final count = await ChallengeStore.instance.importJson(ctrl.text.trim());
+      if (ctx.mounted) {
+        ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
+          content: Text(lang == 'en'
+              ? 'Imported $count challenge${count == 1 ? '' : 's'}'
+              : 'Importováno: $count výzev'),
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+    } catch (e) {
+      if (ctx.mounted) {
+        ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
+          content: Text('Import failed: $e'),
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+    } finally {
+      if (mounted) setState(() => _importing = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!_loaded) {
@@ -494,7 +579,8 @@ class _SettingsSheetState extends State<_SettingsSheet> {
               ),
             ),
             const SizedBox(height: Gap.lg),
-            // ── Timer card ──────────────────────────────────────
+
+            // ── Quick tools ──────────────────────────────────────
             _RunnerCard(
               color: Spectrum.mint,
               icon: Icons.timer_rounded,
@@ -509,7 +595,6 @@ class _SettingsSheetState extends State<_SettingsSheet> {
               startLabel: lang == 'en' ? 'Start' : 'Spustit',
             ),
             const SizedBox(height: Gap.sm),
-            // ── Countdown card ──────────────────────────────────
             _RunnerCard(
               color: Spectrum.amber,
               icon: Icons.pin_rounded,
@@ -522,95 +607,234 @@ class _SettingsSheetState extends State<_SettingsSheet> {
               onStart: () => _startCountdown(context),
               startLabel: lang == 'en' ? 'Start' : 'Spustit',
             ),
-            const SizedBox(height: Gap.md),
-            const Divider(),
-            // ── Language ────────────────────────────────────────
-            const SizedBox(height: Gap.sm),
-            _SheetLabel(lang == 'en' ? 'Language' : 'Jazyk'),
+            const SizedBox(height: Gap.lg),
+
+            // ── Timer display ────────────────────────────────────
+            _SectionLabel(lang == 'en' ? 'TIMER DISPLAY' : 'ZOBRAZENÍ ČASU'),
             const SizedBox(height: 8),
-            AnimatedBuilder(
-              animation: LangStore.instance,
-              builder: (context, _) {
-                final cur = LangStore.instance.lang;
-                return Row(
+            _SettingsCard(
+              child: Padding(
+                padding: const EdgeInsets.all(Gap.md),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: _LangChip(
-                        flag: '🇨🇿',
-                        label: 'Čeština',
-                        selected: cur == 'cs',
-                        onTap: () {
-                          LangStore.instance.setLang('cs');
-                          setState(() {});
-                        },
-                      ),
+                    Text(
+                      lang == 'en'
+                          ? 'Show remaining time as'
+                          : 'Zobrazit zbývající čas jako',
+                      style: const TextStyle(
+                          fontSize: 13, color: Spectrum.inkSoft),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _LangChip(
-                        flag: '🇬🇧',
-                        label: 'English',
-                        selected: cur == 'en',
-                        onTap: () {
-                          LangStore.instance.setLang('en');
-                          setState(() {});
-                        },
-                      ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _ToggleChip(
+                            label: '2:30',
+                            sublabel: lang == 'en' ? 'min:sec' : 'min:sek',
+                            color: Spectrum.mint,
+                            selected: _timerDisplayMinSec,
+                            onTap: () {
+                              setState(() => _timerDisplayMinSec = true);
+                              Prefs.setTimerDisplayMinSec(true);
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _ToggleChip(
+                            label: '150',
+                            sublabel: lang == 'en' ? 'seconds' : 'sekundy',
+                            color: Spectrum.sky,
+                            selected: !_timerDisplayMinSec,
+                            onTap: () {
+                              setState(() => _timerDisplayMinSec = false);
+                              Prefs.setTimerDisplayMinSec(false);
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                   ],
-                );
-              },
-            ),
-            const SizedBox(height: Gap.md),
-            const Divider(),
-            const SizedBox(height: Gap.sm),
-            _SheetLabel(lang == 'en'
-                ? 'Child\'s name (for celebration)'
-                : 'Jak oslovit dítě? (5. pád)'),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _vocativeCtrl,
-              onChanged: (v) => Prefs.setKidVocative(v.trim()),
-              decoration: InputDecoration(
-                hintText: lang == 'en'
-                    ? 'e.g. Tommy, Anna…'
-                    : 'např. Tomáši, Anno, Kubíčku…',
-                hintStyle: const TextStyle(color: Spectrum.inkSoft),
-                filled: true,
-                fillColor: Spectrum.bg,
-                contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 12),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(Radii.sm),
-                  borderSide: BorderSide(
-                      color: Spectrum.inkSoft.withValues(alpha: 0.2)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(Radii.sm),
-                  borderSide: BorderSide(
-                      color: Spectrum.inkSoft.withValues(alpha: 0.2)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(Radii.sm),
-                  borderSide:
-                      const BorderSide(color: Spectrum.sky, width: 2),
                 ),
               ),
             ),
-            const SizedBox(height: Gap.md),
-            const Divider(),
-            _HowItWorksSection(lang: lang),
-            const Divider(),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.info_outline_rounded,
-                  color: Spectrum.inkSoft),
-              title: Text(
-                  lang == 'en' ? 'About Spectroom' : 'O aplikaci'),
-              subtitle: const Text(
-                  'v0.5 · Pictograms: Mulberry Symbols (CC BY-SA 4.0)',
-                  style: TextStyle(fontSize: 12)),
+            const SizedBox(height: Gap.lg),
+
+            // ── Language ─────────────────────────────────────────
+            _SectionLabel(lang == 'en' ? 'LANGUAGE' : 'JAZYK'),
+            const SizedBox(height: 8),
+            _SettingsCard(
+              child: Padding(
+                padding: const EdgeInsets.all(Gap.md),
+                child: AnimatedBuilder(
+                  animation: LangStore.instance,
+                  builder: (context, _) {
+                    final cur = LangStore.instance.lang;
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: _LangChip(
+                            flag: '🇨🇿',
+                            label: 'Čeština',
+                            selected: cur == 'cs',
+                            onTap: () {
+                              LangStore.instance.setLang('cs');
+                              setState(() {});
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _LangChip(
+                            flag: '🇬🇧',
+                            label: 'English',
+                            selected: cur == 'en',
+                            onTap: () {
+                              LangStore.instance.setLang('en');
+                              setState(() {});
+                            },
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
             ),
+            const SizedBox(height: Gap.lg),
+
+            // ── Child ────────────────────────────────────────────
+            _SectionLabel(lang == 'en' ? 'CHILD' : 'DÍTĚ'),
+            const SizedBox(height: 8),
+            _SettingsCard(
+              child: Padding(
+                padding: const EdgeInsets.all(Gap.md),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      lang == 'en'
+                          ? 'Name for celebrations (vocative)'
+                          : 'Jak oslovit dítě? (5. pád)',
+                      style: const TextStyle(
+                          fontSize: 13, color: Spectrum.inkSoft),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: _vocativeCtrl,
+                      onChanged: (v) => Prefs.setKidVocative(v.trim()),
+                      decoration: InputDecoration(
+                        hintText: lang == 'en'
+                            ? 'e.g. Tommy, Anna…'
+                            : 'např. Tomáši, Anno, Kubíčku…',
+                        hintStyle:
+                            const TextStyle(color: Spectrum.inkSoft),
+                        filled: true,
+                        fillColor: Spectrum.bg,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(Radii.sm),
+                          borderSide: BorderSide(
+                              color:
+                                  Spectrum.inkSoft.withValues(alpha: 0.2)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(Radii.sm),
+                          borderSide: BorderSide(
+                              color:
+                                  Spectrum.inkSoft.withValues(alpha: 0.2)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(Radii.sm),
+                          borderSide: const BorderSide(
+                              color: Spectrum.sky, width: 2),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: Gap.lg),
+
+            // ── Data ─────────────────────────────────────────────
+            _SectionLabel(lang == 'en' ? 'DATA' : 'DATA'),
+            const SizedBox(height: 8),
+            _SettingsCard(
+              child: Column(
+                children: [
+                  _ActionRow(
+                    icon: Icons.upload_rounded,
+                    color: Spectrum.mint,
+                    title: lang == 'en' ? 'Export backup' : 'Exportovat zálohu',
+                    subtitle: lang == 'en'
+                        ? 'Share all your challenges as JSON'
+                        : 'Sdílet vlastní výzvy jako JSON',
+                    loading: _exporting,
+                    onTap: () => _doExport(context),
+                  ),
+                  const Divider(height: 1, indent: 56),
+                  _ActionRow(
+                    icon: Icons.download_rounded,
+                    color: Spectrum.amber,
+                    title: lang == 'en' ? 'Restore backup' : 'Obnovit zálohu',
+                    subtitle: lang == 'en'
+                        ? 'Import challenges from a JSON file'
+                        : 'Importovat výzvy ze souboru JSON',
+                    loading: _importing,
+                    onTap: () => _doImport(context),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: Gap.lg),
+
+            // ── Help & About ─────────────────────────────────────
+            _SectionLabel(lang == 'en' ? 'INFO' : 'INFO'),
+            const SizedBox(height: 8),
+            _SettingsCard(
+              child: Column(
+                children: [
+                  _HowItWorksRow(lang: lang),
+                  const Divider(height: 1, indent: 56),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: Gap.md, vertical: 14),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: Spectrum.lavender.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(Icons.info_outline_rounded,
+                              size: 20, color: Spectrum.lavender),
+                        ),
+                        const SizedBox(width: Gap.sm),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(lang == 'en' ? 'About Spectroom' : 'O aplikaci',
+                                style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600)),
+                            const Text(
+                                'v0.6 · Mulberry Symbols (CC BY-SA 4.0)',
+                                style: TextStyle(
+                                    fontSize: 11, color: Spectrum.inkSoft)),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: Gap.md),
           ],
         ),
       ),
@@ -783,15 +1007,166 @@ class _SheetLabel extends StatelessWidget {
       );
 }
 
-class _HowItWorksSection extends StatefulWidget {
-  final String lang;
-  const _HowItWorksSection({required this.lang});
+class _SectionLabel extends StatelessWidget {
+  final String text;
+  const _SectionLabel(this.text);
 
   @override
-  State<_HowItWorksSection> createState() => _HowItWorksSectionState();
+  Widget build(BuildContext context) => Text(
+        text,
+        style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.0,
+            color: Spectrum.inkSoft),
+      );
 }
 
-class _HowItWorksSectionState extends State<_HowItWorksSection> {
+class _SettingsCard extends StatelessWidget {
+  final Widget child;
+  const _SettingsCard({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Spectrum.surface,
+        borderRadius: BorderRadius.circular(Radii.lg),
+        boxShadow: [
+          BoxShadow(
+              color: Spectrum.ink.withValues(alpha: 0.04),
+              blurRadius: 16,
+              offset: const Offset(0, 5)),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(Radii.lg),
+        child: child,
+      ),
+    );
+  }
+}
+
+class _ToggleChip extends StatelessWidget {
+  final String label;
+  final String sublabel;
+  final Color color;
+  final bool selected;
+  final VoidCallback onTap;
+  const _ToggleChip({
+    required this.label,
+    required this.sublabel,
+    required this.color,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: selected ? color.withValues(alpha: 0.15) : Spectrum.bg,
+          borderRadius: BorderRadius.circular(Radii.sm),
+          border: Border.all(
+            color: selected ? color : Spectrum.inkSoft.withValues(alpha: 0.2),
+            width: selected ? 2 : 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            Text(label,
+                style: TextStyle(
+                    fontFamily: 'Geist',
+                    fontSize: 22,
+                    fontWeight: FontWeight.w300,
+                    color: selected ? color : Spectrum.inkSoft)),
+            const SizedBox(height: 2),
+            Text(sublabel,
+                style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: selected ? color : Spectrum.inkSoft)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ActionRow extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String subtitle;
+  final bool loading;
+  final VoidCallback onTap;
+  const _ActionRow({
+    required this.icon,
+    required this.color,
+    required this.title,
+    required this.subtitle,
+    required this.loading,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: loading ? null : onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: Gap.md, vertical: 14),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: loading
+                  ? Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: color))
+                  : Icon(icon, size: 20, color: color),
+            ),
+            const SizedBox(width: Gap.sm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: const TextStyle(
+                          fontSize: 15, fontWeight: FontWeight.w600)),
+                  Text(subtitle,
+                      style: const TextStyle(
+                          fontSize: 12, color: Spectrum.inkSoft)),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded,
+                size: 20, color: Spectrum.inkSoft.withValues(alpha: 0.5)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HowItWorksRow extends StatefulWidget {
+  final String lang;
+  const _HowItWorksRow({required this.lang});
+
+  @override
+  State<_HowItWorksRow> createState() => _HowItWorksRowState();
+}
+
+class _HowItWorksRowState extends State<_HowItWorksRow> {
   bool _expanded = false;
 
   @override
@@ -803,57 +1178,72 @@ class _HowItWorksSectionState extends State<_HowItWorksSection> {
             'Každou výzvu si lze nejdřív prohlédnout krok za krokem — bez tlaku, jen jako přípravu.',
             'V živém režimu provede dítě celou rutinou: obrázek za obrázkem, s odpočítáváním nebo časovačem.',
             'Rodiče mohou přidávat vlastní výzvy: klepněte na „+" a zadejte název, kategorii a kroky.',
-            'Ke každému kroku přiřaďte obrázek — klepněte na čtvereček s ikonou fotoaparátu. Fotku lze vyfotit přímo nebo vybrat z galerie.',
-            'Krok může být jen obrázek (informace), odpočet čísel (1, 2, 3…) nebo vizuální časovač.',
+            'Ke každému kroku přiřaďte obrázek — klepněte na čtvereček s ikonou fotoaparátu.',
+            'Krok může být jen obrázek (informace), odpočet čísel nebo vizuální časovač.',
           ]
         : [
-            'Spectroom comes with built-in challenges: dentist, getting dressed, nail clipping, haircut, and a doctor visit.',
+            'Spectroom comes with built-in challenges: dentist, getting dressed, nail clipping, haircut, and doctor visits.',
             'Any challenge can be previewed step-by-step first — no pressure, just preparation.',
             'In live mode the app guides your child picture by picture, with countdown or visual timer.',
             'Parents can create custom challenges: tap "+" and enter a name, category, and steps.',
-            'For each step, assign a picture — tap the tile with the camera icon to take a photo or pick from the gallery.',
+            'For each step, assign a picture — take a photo or pick from the gallery.',
             'A step can be a plain picture card, a countdown (1, 2, 3…), or a visual timer.',
           ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ListTile(
-          contentPadding: EdgeInsets.zero,
-          leading: const Icon(Icons.help_outline_rounded,
-              color: Spectrum.inkSoft),
-          title:
-              Text(cs ? 'Jak to funguje' : 'How it works'),
-          trailing: Icon(
-            _expanded
-                ? Icons.expand_less_rounded
-                : Icons.expand_more_rounded,
-            color: Spectrum.inkSoft,
-          ),
+        InkWell(
           onTap: () => setState(() => _expanded = !_expanded),
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: Gap.md, vertical: 14),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: Spectrum.sky.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.help_outline_rounded,
+                      size: 20, color: Spectrum.sky),
+                ),
+                const SizedBox(width: Gap.sm),
+                Expanded(
+                  child: Text(cs ? 'Jak to funguje' : 'How it works',
+                      style: const TextStyle(
+                          fontSize: 15, fontWeight: FontWeight.w600)),
+                ),
+                Icon(
+                  _expanded
+                      ? Icons.expand_less_rounded
+                      : Icons.expand_more_rounded,
+                  size: 20,
+                  color: Spectrum.inkSoft.withValues(alpha: 0.5),
+                ),
+              ],
+            ),
+          ),
         ),
         if (_expanded)
           Padding(
-            padding:
-                const EdgeInsets.fromLTRB(0, 0, 0, Gap.sm),
+            padding: const EdgeInsets.fromLTRB(Gap.md, 0, Gap.md, Gap.md),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: bullets
                   .map((b) => Padding(
-                        padding:
-                            const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.only(bottom: 8),
                         child: Row(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              margin: const EdgeInsets.only(
-                                  top: 6, right: 8),
+                              margin: const EdgeInsets.only(top: 6, right: 8),
                               width: 5,
                               height: 5,
-                              decoration: BoxDecoration(
-                                  color: Spectrum.mint,
-                                  shape: BoxShape.circle),
+                              decoration: const BoxDecoration(
+                                  color: Spectrum.mint, shape: BoxShape.circle),
                             ),
                             Expanded(
                               child: Text(b,
