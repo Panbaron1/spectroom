@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../data/lang_store.dart';
+import '../data/prefs.dart';
 import '../design/spectrum.dart';
 import '../models/challenge.dart';
 import '../models/pictogram_ref.dart';
@@ -31,6 +32,8 @@ class RunnerScreen extends StatefulWidget {
 
 class _RunnerScreenState extends State<RunnerScreen> {
   int _index = 0;
+  String _kidVocative = '';
+  bool _completionRecorded = false;
 
   Color get _accent => Palette.of(widget.challenge.category);
   Color get _tint => Palette.tintOf(widget.challenge.category);
@@ -40,6 +43,7 @@ class _RunnerScreenState extends State<RunnerScreen> {
   void initState() {
     super.initState();
     if (widget.live) _playStepAudio(0);
+    Prefs.kidVocative().then((v) { if (mounted) setState(() => _kidVocative = v); });
   }
 
   @override
@@ -66,6 +70,10 @@ class _RunnerScreenState extends State<RunnerScreen> {
         _playStepAudio(_index);
       } else {
         AudioService.instance.stopVoice();
+        if (!_completionRecorded) {
+          _completionRecorded = true;
+          Prefs.setLastDone(widget.challenge.id);
+        }
       }
     }
   }
@@ -105,6 +113,7 @@ class _RunnerScreenState extends State<RunnerScreen> {
                           ? _Celebration(
                               key: const ValueKey('end'),
                               accent: _accent,
+                              kidVocative: _kidVocative,
                               onDone: () => Navigator.pop(context))
                           : _StepView(
                               key: ValueKey('${widget.live}-$_index'),
@@ -623,7 +632,8 @@ class _TimerPreview extends StatelessWidget {
 class _Celebration extends StatefulWidget {
   final Color accent;
   final VoidCallback onDone;
-  const _Celebration({super.key, required this.accent, required this.onDone});
+  final String kidVocative;
+  const _Celebration({super.key, required this.accent, required this.onDone, this.kidVocative = ''});
 
   @override
   State<_Celebration> createState() => _CelebrationState();
@@ -696,6 +706,18 @@ class _CelebrationState extends State<_Celebration>
                         fontWeight: FontWeight.w800,
                         color: Colors.white)),
               ),
+              if (widget.kidVocative.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(
+                  LangStore.instance.lang == 'en'
+                      ? 'Well done, ${widget.kidVocative}!'
+                      : 'Výborně, ${widget.kidVocative}!',
+                  style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w600,
+                      color: widget.accent),
+                ),
+              ],
               const SizedBox(height: 40),
               FilledButton(
                 onPressed: widget.onDone,

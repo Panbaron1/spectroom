@@ -13,8 +13,15 @@ import 'runner_screen.dart';
 
 /// Library of challenges. Tap a card → pick Rehearsal or Live. FAB → build your
 /// own. Long-press a parent-made card → edit/delete.
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  String _query = '';
 
   @override
   Widget build(BuildContext context) {
@@ -22,18 +29,23 @@ class HomeScreen extends StatelessWidget {
     return AnimatedBuilder(
       animation: Listenable.merge([store, LangStore.instance]),
       builder: (context, _) {
-        final items = store.all;
         final lang = LangStore.instance.lang;
+        final all = store.all;
+        final items = _query.isEmpty
+            ? all
+            : all.where((c) =>
+                c.titleCs.toLowerCase().contains(_query.toLowerCase()) ||
+                c.titleEn.toLowerCase().contains(_query.toLowerCase())).toList();
         return Scaffold(
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _openBuilder(context, null),
-        backgroundColor: Spectrum.ink,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add_rounded),
-        label: Text(lang == 'en' ? 'New challenge' : 'Nová výzva',
-            style: const TextStyle(fontWeight: FontWeight.w600)),
-      ),
-      body: CustomScrollView(
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: () => _openBuilder(context, null),
+            backgroundColor: Spectrum.ink,
+            foregroundColor: Colors.white,
+            icon: const Icon(Icons.add_rounded),
+            label: Text(lang == 'en' ? 'New challenge' : 'Nová výzva',
+                style: const TextStyle(fontWeight: FontWeight.w600)),
+          ),
+          body: CustomScrollView(
             slivers: [
               SliverToBoxAdapter(
                 child: SafeArea(
@@ -60,11 +72,12 @@ class HomeScreen extends StatelessWidget {
                                         color: Colors.white)),
                               ),
                               const SizedBox(height: 4),
-                              Text(lang == 'en'
-                                  ? 'Walk through what\'s coming.'
-                                  : 'Klidně si projdi, co nás čeká.',
-                                  style: const TextStyle(
-                                      fontSize: 15, color: Spectrum.inkSoft)),
+                              Text(
+                                lang == 'en'
+                                    ? 'Walk through what\'s coming.'
+                                    : 'Klidně si projdi, co nás čeká.',
+                                style: const TextStyle(
+                                    fontSize: 15, color: Spectrum.inkSoft)),
                             ],
                           ),
                         ),
@@ -78,19 +91,40 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
               ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(Gap.md, 0, Gap.md, Gap.md),
+                  child: TextField(
+                    onChanged: (v) => setState(() => _query = v.trim()),
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                      hintText: lang == 'en' ? 'Search…' : 'Hledat…',
+                      hintStyle: const TextStyle(color: Spectrum.inkSoft),
+                      filled: true,
+                      fillColor: Spectrum.surface,
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(Radii.md),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(Gap.md, 0, Gap.md, 110),
                 sliver: SliverGrid(
-                  gridDelegate:
-                      SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: Breakpoints.gridColumns(
                         MediaQuery.sizeOf(context).width),
                     mainAxisSpacing: Gap.md,
                     crossAxisSpacing: Gap.md,
-                    childAspectRatio: 0.84,
+                    childAspectRatio: 0.78,
                   ),
                   delegate: SliverChildBuilderDelegate(
-                    (context, i) => _ChallengeCard(challenge: items[i], lang: lang),
+                    (context, i) =>
+                        _ChallengeCard(challenge: items[i], lang: lang),
                     childCount: items.length,
                   ),
                 ),
@@ -103,15 +137,52 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class _ChallengeCard extends StatelessWidget {
+class _ChallengeCard extends StatefulWidget {
   final Challenge challenge;
   final String lang;
   const _ChallengeCard({required this.challenge, required this.lang});
 
   @override
+  State<_ChallengeCard> createState() => _ChallengeCardState();
+}
+
+class _ChallengeCardState extends State<_ChallengeCard> {
+  DateTime? _lastDone;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLastDone();
+    Prefs.lastDoneNotifier.addListener(_loadLastDone);
+  }
+
+  @override
+  void dispose() {
+    Prefs.lastDoneNotifier.removeListener(_loadLastDone);
+    super.dispose();
+  }
+
+  Future<void> _loadLastDone() async {
+    final d = await Prefs.lastDone(widget.challenge.id);
+    if (mounted) setState(() => _lastDone = d);
+  }
+
+  String _lastDoneLabel() {
+    if (_lastDone == null) return '';
+    final diff = DateTime.now().difference(_lastDone!).inDays;
+    if (diff == 0) return widget.lang == 'en' ? 'Today' : 'Dnes';
+    if (diff == 1) return widget.lang == 'en' ? 'Yesterday' : 'Včera';
+    if (diff < 7) return widget.lang == 'en' ? '${diff}d ago' : 'Před ${diff}d';
+    return widget.lang == 'en' ? '${diff ~/ 7}w ago' : 'Před ${diff ~/ 7}t';
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final challenge = widget.challenge;
+    final lang = widget.lang;
     final accent = Spectrum.accent(challenge.category);
     final tint = Spectrum.accentTint(challenge.category);
+    final lastDoneLabel = _lastDoneLabel();
     return DecoratedBox(
       decoration: BoxDecoration(
         color: Spectrum.surface,
@@ -142,17 +213,17 @@ class _ChallengeCard extends StatelessWidget {
                         size: 112, tint: tint),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 Text(
                   challenge.title(lang),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                      fontSize: 17,
+                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                       letterSpacing: -0.3),
                 ),
-                const SizedBox(height: 5),
+                const SizedBox(height: 4),
                 Row(
                   children: [
                     Container(
@@ -162,11 +233,22 @@ class _ChallengeCard extends StatelessWidget {
                           color: accent, shape: BoxShape.circle),
                     ),
                     const SizedBox(width: 6),
-                    Text(lang == 'en'
-                        ? '${challenge.steps.length} steps'
-                        : '${challenge.steps.length} kroků',
-                        style: const TextStyle(
-                            fontSize: 13, color: Spectrum.inkSoft)),
+                    Text(
+                      lang == 'en'
+                          ? '${challenge.steps.length} steps'
+                          : '${challenge.steps.length} kroků',
+                      style: const TextStyle(
+                          fontSize: 12, color: Spectrum.inkSoft)),
+                    if (lastDoneLabel.isNotEmpty) ...[
+                      const SizedBox(width: 6),
+                      Text('·',
+                          style: const TextStyle(
+                              fontSize: 12, color: Spectrum.inkSoft)),
+                      const SizedBox(width: 6),
+                      Text(lastDoneLabel,
+                          style: TextStyle(
+                              fontSize: 12, color: accent)),
+                    ],
                   ],
                 ),
               ],
@@ -274,22 +356,32 @@ class _SettingsSheetState extends State<_SettingsSheet> {
   int _timerSec = 300;
   int _countdownN = 10;
   bool _loaded = false;
+  late final TextEditingController _vocativeCtrl;
 
   @override
   void initState() {
     super.initState();
+    _vocativeCtrl = TextEditingController();
     Future.wait([
       Prefs.standaloneTimerSec(),
       Prefs.standaloneCountdownN(),
+      Prefs.kidVocative(),
     ]).then((vals) {
       if (mounted) {
         setState(() {
-          _timerSec = vals[0];
-          _countdownN = vals[1];
+          _timerSec = vals[0] as int;
+          _countdownN = vals[1] as int;
+          _vocativeCtrl.text = vals[2] as String;
           _loaded = true;
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _vocativeCtrl.dispose();
+    super.dispose();
   }
 
   String get _lang => LangStore.instance.lang;
@@ -459,6 +551,42 @@ class _SettingsSheetState extends State<_SettingsSheet> {
                   ],
                 );
               },
+            ),
+            const SizedBox(height: Gap.md),
+            const Divider(),
+            const SizedBox(height: Gap.sm),
+            _SheetLabel(lang == 'en'
+                ? 'Child\'s name (for celebration)'
+                : 'Jak oslovit dítě? (5. pád)'),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _vocativeCtrl,
+              onChanged: (v) => Prefs.setKidVocative(v.trim()),
+              decoration: InputDecoration(
+                hintText: lang == 'en'
+                    ? 'e.g. Tommy, Anna…'
+                    : 'např. Tomáši, Anno, Kubíčku…',
+                hintStyle: const TextStyle(color: Spectrum.inkSoft),
+                filled: true,
+                fillColor: Spectrum.bg,
+                contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(Radii.sm),
+                  borderSide: BorderSide(
+                      color: Spectrum.inkSoft.withValues(alpha: 0.2)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(Radii.sm),
+                  borderSide: BorderSide(
+                      color: Spectrum.inkSoft.withValues(alpha: 0.2)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(Radii.sm),
+                  borderSide:
+                      const BorderSide(color: Spectrum.sky, width: 2),
+                ),
+              ),
             ),
             const SizedBox(height: Gap.md),
             const Divider(),

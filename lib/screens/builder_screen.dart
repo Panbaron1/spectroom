@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 import 'package:uuid/uuid.dart';
 
+import '../data/asset_icons.dart';
 import '../data/challenge_store.dart';
 import '../data/lang_store.dart';
 import '../data/mulberry.dart';
@@ -229,12 +230,20 @@ class _BuilderScreenState extends State<BuilderScreen> {
             ),
           ),
           const SizedBox(height: Gap.sm),
-          // ── Step cards ────────────────────────────────────────
-          for (int i = 0; i < _steps.length; i++)
-            Padding(
+          // ── Step cards (drag to reorder) ──────────────────────
+          ReorderableListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _steps.length,
+            onReorderItem: (oldIndex, newIndex) {
+              setState(() {
+                _steps.insert(newIndex, _steps.removeAt(oldIndex));
+              });
+            },
+            itemBuilder: (context, i) => Padding(
+              key: ValueKey(_steps[i].key),
               padding: const EdgeInsets.only(bottom: Gap.sm),
               child: _StepEditor(
-                key: ValueKey(_steps[i].key),
                 index: i,
                 draft: _steps[i],
                 lang: _lang,
@@ -245,6 +254,7 @@ class _BuilderScreenState extends State<BuilderScreen> {
                     : () => setState(() => _steps.removeAt(i)),
               ),
             ),
+          ),
           // ── Add step ──────────────────────────────────────────
           GestureDetector(
             onTap: () => setState(() => _steps.add(_StepDraft.blank())),
@@ -371,7 +381,6 @@ class _StepEditor extends StatelessWidget {
   final VoidCallback onChanged;
   final VoidCallback? onRemove;
   const _StepEditor({
-    super.key,
     required this.index,
     required this.draft,
     required this.lang,
@@ -698,6 +707,12 @@ class _PictogramPicker extends StatelessWidget {
             ),
             ListTile(
                 leading:
+                    const Icon(Icons.auto_awesome_rounded),
+                title: Text(lang == 'en' ? 'App icons' : 'Ikony aplikace'),
+                onTap: () =>
+                    Navigator.pop(ctx, 'asset')),
+            ListTile(
+                leading:
                     const Icon(Icons.grid_view_rounded),
                 title: const Text('Symbol (Mulberry)'),
                 onTap: () =>
@@ -725,6 +740,15 @@ class _PictogramPicker extends StatelessWidget {
       ),
     );
     if (choice == null || !context.mounted) return;
+
+    if (choice == 'asset') {
+      final name = await Navigator.push<String>(
+        context,
+        MaterialPageRoute(builder: (_) => const _AssetIconPickerScreen()),
+      );
+      if (name != null) onChanged(PictogramRef.asset(name));
+      return;
+    }
 
     if (choice == 'symbol') {
       final name = await Navigator.push<String>(
@@ -819,6 +843,77 @@ class _PictogramPicker extends StatelessWidget {
               ),
               child: const Icon(Icons.photo_camera_rounded,
                   size: 11, color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Kawaii asset icon picker ─────────────────────────────────
+
+class _AssetIconPickerScreen extends StatefulWidget {
+  const _AssetIconPickerScreen();
+  @override
+  State<_AssetIconPickerScreen> createState() => _AssetIconPickerScreenState();
+}
+
+class _AssetIconPickerScreenState extends State<_AssetIconPickerScreen> {
+  List<String> _all = [];
+  String _query = '';
+
+  @override
+  void initState() {
+    super.initState();
+    bundledAssetIcons().then((s) {
+      if (mounted) setState(() => _all = s);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final items = _query.isEmpty
+        ? _all
+        : _all.where((s) => s.contains(_query.toLowerCase())).toList();
+    final lang = LangStore.instance.lang;
+    return Scaffold(
+      appBar: AppBar(
+          title: Text(lang == 'en' ? 'App icons' : 'Ikony aplikace')),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: TextField(
+              autofocus: true,
+              decoration: InputDecoration(
+                prefixIcon: const Icon(Icons.search_rounded),
+                hintText: lang == 'en'
+                    ? 'Search: toilet, moon, plate…'
+                    : 'Hledat (anglicky): toilet, moon, plate…',
+              ),
+              onChanged: (v) => setState(() => _query = v.trim()),
+            ),
+          ),
+          Expanded(
+            child: GridView.builder(
+              padding: const EdgeInsets.all(16),
+              gridDelegate:
+                  const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+              ),
+              itemCount: items.length,
+              itemBuilder: (context, i) => InkWell(
+                borderRadius: BorderRadius.circular(20),
+                onTap: () => Navigator.pop(context, items[i]),
+                child: PictogramTile(
+                  PictogramRef.asset(items[i]),
+                  size: 72,
+                  tint: Spectrum.accentTint(ChallengeCategory.routine),
+                ),
+              ),
             ),
           ),
         ],
