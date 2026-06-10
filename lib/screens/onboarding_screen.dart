@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import '../data/lang_store.dart';
 import '../data/prefs.dart';
@@ -31,12 +32,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       bodyEn: 'Calm visual routines that help your child through hard moments — nail clipping, dentist, getting dressed — step by step, with pictures.',
     ),
     _Page(
-      symbol: 'read',
+      symbol: 'magnifying_glass',
       accent: Spectrum.lavender,
       titleCs: 'Nejdřív se podíváme',
-      titleEn: 'First, let\'s look',
+      titleEn: 'Preview first',
       bodyCs: 'V klidovém režimu si rutinu projdete dopředu. Obrázek po obrázku ukáže, co se bude dít. Žádná překvapení — to pomáhá nejvíc.',
-      bodyEn: 'In preview mode, you walk through the routine ahead of time. Picture by picture shows what will happen. No surprises — that helps most.',
+      bodyEn: 'Walk through the routine ahead of time. Picture by picture shows exactly what will happen. No surprises — that helps most.',
     ),
     _Page(
       symbol: 'clip_nails',
@@ -44,7 +45,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       titleCs: 'Pak to zvládneme',
       titleEn: 'Then we do it',
       bodyCs: 'V živém režimu vás appka provede krok za krokem. Odpočítávání a klidný časovač pomůžou dítěti zvládnout to skoro samo.',
-      bodyEn: 'In live mode, the app guides you step by step. Countdown and calm timer help your child get through it almost on their own.',
+      bodyEn: 'In live mode the app guides you step by step. Countdown and calm timer help your child get through it almost on their own.',
     ),
   ];
 
@@ -85,83 +86,86 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           SafeArea(
             child: ContentBox(
               child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 10, 8, 0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      ShaderMask(
-                        shaderCallback: (r) => Spectrum.brand.createShader(r),
-                        child: const Text('Spectroom',
-                            style: TextStyle(
-                                fontFamily: 'Geist',
-                                fontSize: 22,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: -0.5,
-                                color: Colors.white)),
-                      ),
-                      if (_page > 0)
-                        TextButton(
-                          onPressed: _isLast ? null : _finish,
-                          child: Text(_isLast ? '' : 'Přeskočit / Skip',
-                              style:
-                                  const TextStyle(color: Spectrum.inkSoft)),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 10, 8, 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        ShaderMask(
+                          shaderCallback: (r) => Spectrum.brand.createShader(r),
+                          child: const Text('Spectroom',
+                              style: TextStyle(
+                                  fontFamily: 'Geist',
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: -0.5,
+                                  color: Colors.white)),
                         ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: PageView.builder(
-                    controller: _ctrl,
-                    physics: const NeverScrollableScrollPhysics(),
-                    onPageChanged: (i) => setState(() => _page = i),
-                    itemCount: _introPages.length + 1,
-                    itemBuilder: (_, i) => i == 0
-                        ? _LangPickerPage(onPicked: () => setState(() {}))
-                        : _PageView(
-                            page: _introPages[i - 1],
-                            lang: LangStore.instance.lang,
+                        if (_page > 0)
+                          TextButton(
+                            onPressed: _isLast ? null : _finish,
+                            child: Text(_isLast ? '' : 'Přeskočit / Skip',
+                                style: const TextStyle(color: Spectrum.inkSoft)),
                           ),
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(_introPages.length + 1, (i) {
-                    final active = i == _page;
-                    return AnimatedContainer(
-                      duration: const Duration(milliseconds: 250),
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      width: active ? 24 : 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: active
-                            ? _accent
-                            : Palette.inkSoft.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                    );
-                  }),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: _nextOrFinish,
-                      style: FilledButton.styleFrom(
-                          backgroundColor: _accent,
-                          minimumSize: const Size.fromHeight(60)),
-                      child: Text(_isLast
-                          ? (LangStore.instance.lang == 'en'
-                              ? 'Start'
-                              : 'Začít')
-                          : (LangStore.instance.lang == 'en' ? 'Next' : 'Dál')),
+                      ],
                     ),
                   ),
-                ),
-              ],
-            ),
+                  Expanded(
+                    child: PageView.builder(
+                      controller: _ctrl,
+                      physics: const NeverScrollableScrollPhysics(),
+                      onPageChanged: (i) => setState(() => _page = i),
+                      itemCount: _introPages.length + 1,
+                      itemBuilder: (_, i) => i == 0
+                          ? _LangPickerPage(onPicked: () => setState(() {}))
+                          : _PageView(
+                              page: _introPages[i - 1],
+                              lang: LangStore.instance.lang,
+                            ),
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(_introPages.length + 1, (i) {
+                      final active = i == _page;
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        width: active ? 24 : 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: active
+                              ? _accent
+                              : Palette.inkSoft.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      );
+                    }),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: _nextOrFinish,
+                        style: FilledButton.styleFrom(
+                            backgroundColor: _accent,
+                            minimumSize: const Size.fromHeight(60)),
+                        child: Text(
+                          _isLast
+                              ? (LangStore.instance.lang == 'en' ? 'Start' : 'Začít')
+                              : (LangStore.instance.lang == 'en' ? 'Next' : 'Dál'),
+                          style: const TextStyle(
+                              fontFamily: 'Geist',
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -169,6 +173,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 }
+
+// ── Language picker ──────────────────────────────────────────
 
 class _LangPickerPage extends StatefulWidget {
   final VoidCallback onPicked;
@@ -190,91 +196,155 @@ class _LangPickerPageState extends State<_LangPickerPage> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      padding: const EdgeInsets.symmetric(horizontal: 28),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            width: 140,
-            height: 140,
-            decoration: BoxDecoration(
-              color: Spectrum.surface,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                    color: Spectrum.sky.withValues(alpha: 0.28),
-                    blurRadius: 48,
-                    offset: const Offset(0, 18)),
-              ],
-            ),
-            child: const Center(
-              child: Text('🌍', style: TextStyle(fontSize: 64)),
-            ),
-          ),
-          const SizedBox(height: 40),
-          const Text('Vyber jazyk / Choose language',
-              textAlign: TextAlign.center,
+          // Spectroom spectrum wordmark as hero
+          ShaderMask(
+            shaderCallback: (r) => Spectrum.brand.createShader(r),
+            child: const Text(
+              'Spectroom',
               style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.4,
-                  color: Spectrum.ink)),
-          const SizedBox(height: 32),
-          Row(
-            children: [
-              Expanded(child: _LangButton(code: 'cs', flag: '🇨🇿', label: 'Čeština', selected: _selected == 'cs', onTap: () => _pick('cs'))),
-              const SizedBox(width: 16),
-              Expanded(child: _LangButton(code: 'en', flag: '🇬🇧', label: 'English', selected: _selected == 'en', onTap: () => _pick('en'))),
-            ],
-          ),
+                  fontFamily: 'Geist',
+                  fontSize: 52,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -2,
+                  color: Colors.white),
+            ),
+          ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.15, end: 0),
+          const SizedBox(height: 8),
+          const Text(
+            'Vyber jazyk · Choose language',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: Spectrum.inkSoft,
+                letterSpacing: 0.1),
+          ).animate().fadeIn(delay: 150.ms, duration: 400.ms),
+          const SizedBox(height: 44),
+          _LangTile(
+            code: 'cs',
+            label: 'Čeština',
+            sublabel: 'Česky',
+            accent: Spectrum.coral,
+            selected: _selected == 'cs',
+            onTap: () => _pick('cs'),
+          ).animate().fadeIn(delay: 250.ms, duration: 350.ms).slideX(begin: -0.08, end: 0),
+          const SizedBox(height: 14),
+          _LangTile(
+            code: 'en',
+            label: 'English',
+            sublabel: 'In English',
+            accent: Spectrum.sky,
+            selected: _selected == 'en',
+            onTap: () => _pick('en'),
+          ).animate().fadeIn(delay: 350.ms, duration: 350.ms).slideX(begin: 0.08, end: 0),
         ],
       ),
     );
   }
 }
 
-class _LangButton extends StatelessWidget {
-  final String code, flag, label;
+class _LangTile extends StatelessWidget {
+  final String code, label, sublabel;
+  final Color accent;
   final bool selected;
   final VoidCallback onTap;
-  const _LangButton({required this.code, required this.flag, required this.label, required this.selected, required this.onTap});
+
+  const _LangTile({
+    required this.code,
+    required this.label,
+    required this.sublabel,
+    required this.accent,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 24),
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOut,
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         decoration: BoxDecoration(
-          color: selected ? Spectrum.sky.withValues(alpha: 0.18) : Spectrum.surface,
+          color: selected ? accent.withValues(alpha: 0.12) : Spectrum.surface,
           borderRadius: BorderRadius.circular(Radii.lg),
           border: Border.all(
-            color: selected ? Spectrum.sky : Colors.transparent,
-            width: 2,
+            color: selected ? accent : Spectrum.inkSoft.withValues(alpha: 0.15),
+            width: selected ? 2.5 : 1,
           ),
           boxShadow: [
             BoxShadow(
-                color: Spectrum.ink.withValues(alpha: selected ? 0.08 : 0.04),
-                blurRadius: 16,
-                offset: const Offset(0, 6)),
+              color: selected
+                  ? accent.withValues(alpha: 0.18)
+                  : Spectrum.ink.withValues(alpha: 0.05),
+              blurRadius: selected ? 28 : 12,
+              offset: const Offset(0, 8),
+            ),
           ],
         ),
-        child: Column(
+        child: Row(
           children: [
-            Text(flag, style: const TextStyle(fontSize: 40)),
-            const SizedBox(height: 10),
-            Text(label,
+            // Color swatch / code badge
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: selected ? accent : accent.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                code.toUpperCase(),
                 style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
-                    color: selected ? Spectrum.sky : Spectrum.ink)),
+                  fontFamily: 'Geist',
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1,
+                  color: selected ? Colors.white : accent,
+                ),
+              ),
+            ),
+            const SizedBox(width: 18),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label,
+                      style: TextStyle(
+                          fontFamily: 'Geist',
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.3,
+                          color: selected ? accent : Spectrum.ink)),
+                  const SizedBox(height: 2),
+                  Text(sublabel,
+                      style: const TextStyle(
+                          fontSize: 13,
+                          color: Spectrum.inkSoft)),
+                ],
+              ),
+            ),
+            AnimatedOpacity(
+              duration: const Duration(milliseconds: 200),
+              opacity: selected ? 1.0 : 0.0,
+              child: Icon(Icons.check_circle_rounded,
+                  color: accent, size: 24),
+            ),
           ],
         ),
       ),
     );
   }
 }
+
+// ── Intro page ───────────────────────────────────────────────
 
 class _Page {
   final String symbol, titleCs, titleEn, bodyCs, bodyEn;
@@ -302,35 +372,42 @@ class _PageView extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 196,
-            height: 196,
+            width: 200,
+            height: 200,
             decoration: BoxDecoration(
               color: Spectrum.surface,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                    color: page.accent.withValues(alpha: 0.28),
-                    blurRadius: 48,
-                    offset: const Offset(0, 18)),
+                    color: page.accent.withValues(alpha: 0.32),
+                    blurRadius: 56,
+                    offset: const Offset(0, 20)),
               ],
             ),
             child: Center(
-              child: PictogramView(PictogramRef.asset(page.symbol), size: 108),
+              child: PictogramView(PictogramRef.asset(page.symbol), size: 116),
             ),
-          ),
-          const SizedBox(height: 44),
+          ).animate().scale(
+              begin: const Offset(0.85, 0.85),
+              end: const Offset(1, 1),
+              duration: 450.ms,
+              curve: Curves.easeOutBack),
+          const SizedBox(height: 48),
           Text(lang == 'en' ? page.titleEn : page.titleCs,
               textAlign: TextAlign.center,
               style: const TextStyle(
+                  fontFamily: 'Geist',
                   fontSize: 30,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.5,
-                  color: Spectrum.ink)),
+                  color: Spectrum.ink))
+              .animate().fadeIn(delay: 100.ms, duration: 350.ms).slideY(begin: 0.1, end: 0),
           const SizedBox(height: 16),
           Text(lang == 'en' ? page.bodyEn : page.bodyCs,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                  fontSize: 16.5, height: 1.55, color: Spectrum.inkSoft)),
+                  fontSize: 16.5, height: 1.6, color: Spectrum.inkSoft))
+              .animate().fadeIn(delay: 200.ms, duration: 350.ms),
         ],
       ),
     );
