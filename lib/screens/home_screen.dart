@@ -97,7 +97,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: TextField(
                     onChanged: (v) => setState(() => _query = v.trim()),
                     decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                      prefixIcon: const Icon(Icons.search_rounded, size: 20,
+                          color: Spectrum.inkSoft),
                       hintText: lang == 'en' ? 'Search…' : 'Hledat…',
                       hintStyle: const TextStyle(color: Spectrum.inkSoft),
                       filled: true,
@@ -105,7 +106,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 12),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(Radii.md),
+                        borderRadius: BorderRadius.circular(Radii.lg),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(Radii.lg),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(Radii.lg),
                         borderSide: BorderSide.none,
                       ),
                     ),
