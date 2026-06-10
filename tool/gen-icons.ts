@@ -68,6 +68,46 @@ const ICONS: Record<string, [string, string]> = {
   pajamas:       ['Kawaii pyjama top folded neatly with small stars or moons pattern, cute face on the fabric. Lavender #BCACE4 filled. White background.', '#BCACE4'],
   moon:          ['Kawaii crescent moon with big cute sleepy face (half-closed eyes), small stars around it. Amber #F1C889 filled moon. White background.', '#F1C889'],
   book:          ['Kawaii open book with cute smiling face on the cover, colorful pages visible. Sky blue #93C2E6 filled cover. White background.', '#93C2E6'],
+  // ── morning routine ──────────────────────────────────────────
+  alarm_clock:   ['Kawaii alarm clock with big cute sleepy/waking face, bells on top, two small legs. Amber #F1C889 filled body. White background.', '#F1C889'],
+  bed:           ['Kawaii cozy bed with pillow and blanket, cute smiling face on the pillow, rounded headboard. Lavender #BCACE4 filled blanket. White background.', '#BCACE4'],
+  breakfast:     ['Kawaii cereal bowl with milk and a spoon, cute smiling face on the bowl, small star-shaped cereal pieces floating. Amber #F1C889 filled bowl. White background.', '#F1C889'],
+  cup:           ['Kawaii drinking cup or mug with cute smiling face, small handle, steam wisps rising. Sky blue #93C2E6 filled cup. White background.', '#93C2E6'],
+  backpack:      ['Kawaii school backpack with cute smiling face on the front pocket, two straps visible, rounded shape. Amber #F1C889 filled. White background.', '#F1C889'],
+  jacket:        ['Kawaii zip-up jacket or hoodie, cute smiling face on the front, zipper visible, folded or flat view. Amber #F1C889 filled. White background.', '#F1C889'],
+  // ── transport ────────────────────────────────────────────────
+  bus:           ['Kawaii school bus or city bus, big cute smiling face on the front, round wheels, windows with tiny faces. Amber #F1C889 filled body. White background.', '#F1C889'],
+  car:           ['Kawaii small rounded car, big cute smiling face on the windshield, two round wheels. Sky blue #93C2E6 filled body. White background.', '#93C2E6'],
+  // ── school / activities ───────────────────────────────────────
+  pencil:        ['Kawaii yellow pencil with cute smiling face near the tip, eraser end visible, rounded shape. Amber #F1C889 filled body. White background.', '#F1C889'],
+  lunchbox:      ['Kawaii lunchbox with cute smiling face, handle on top, rounded rectangle shape, clasp detail. Mint green #8FD3B6 filled. White background.', '#8FD3B6'],
+  ball:          ['Kawaii colorful ball with cute smiling face, round shape, simple stripe pattern. Coral #EFA79E filled. White background.', '#EFA79E'],
+  bicycle:       ['Kawaii small bicycle with cute smiling face on the frame, two round wheels, simple handlebar. Sky blue #93C2E6 filled. White background.', '#93C2E6'],
+  puzzle:        ['Kawaii puzzle piece with cute smiling face, classic jigsaw shape with knob and socket. Lavender #BCACE4 filled. White background.', '#BCACE4'],
+  music:         ['Kawaii music note (quarter note or pair of notes) with cute smiling face, rounded stem. Coral #EFA79E filled. White background.', '#EFA79E'],
+  // ── emotions / regulation ─────────────────────────────────────
+  happy:         ['Kawaii big smiley happy face, rosy cheeks, big sparkling eyes, wide smile. Amber #F1C889 filled round face. White background.', '#F1C889'],
+  sad:           ['Kawaii sad face, teardrop on cheek, downturned mouth, gentle expression — not scary, just soft and empathetic. Lavender #BCACE4 filled round face. White background.', '#BCACE4'],
+  calm:          ['Kawaii calm/breathing icon — a gentle face with closed peaceful eyes and a soft smile, small swirly breath wisps around it. Mint green #8FD3B6 filled face. White background.', '#8FD3B6'],
+  hug:           ['Kawaii two arms giving a hug shape (arms curved inward forming a circle), cute smiling face above. Coral #EFA79E filled arms. White background.', '#EFA79E'],
+  // ── sensory ──────────────────────────────────────────────────
+  headphones:    ['Kawaii over-ear headphones with cute smiling face on the headband, big round earcups, simple design. Lavender #BCACE4 filled earcups. White background.', '#BCACE4'],
+  teddy:         ['Kawaii teddy bear face or whole bear sitting, very cute big eyes, round ears, little nose, soft and comforting. Coral #EFA79E filled. White background.', '#EFA79E'],
+  // ── food & drink ──────────────────────────────────────────────
+  apple:         ['Kawaii red apple with cute smiling face, small green leaf on top, simple rounded shape. Mint green #8FD3B6 leaf, soft red body — use coral #EFA79E for the apple body. White background.', '#EFA79E'],
+  sandwich:      ['Kawaii sandwich with cute smiling face on the side view, two bread slices with filling peeking out. Amber #F1C889 filled bread. White background.', '#F1C889'],
+  spoon:         ['Kawaii spoon with cute smiling face on the bowl of the spoon, simple rounded handle. Mint green #8FD3B6 filled. White background.', '#8FD3B6'],
+  // ── outdoor ──────────────────────────────────────────────────
+  tree:          ['Kawaii round fluffy tree with cute smiling face on the canopy, short brown trunk. Mint green #8FD3B6 filled canopy. White background.', '#8FD3B6'],
+  swim:          ['Kawaii swimming goggles with cute smiling face across the lens band, round lenses, elastic strap. Sky blue #93C2E6 filled lenses. White background.', '#93C2E6'],
+  sunscreen:     ['Kawaii sunscreen bottle with cute smiling face, pump or flip cap on top, rounded bottle shape. Amber #F1C889 filled. White background.', '#F1C889'],
+  // ── hygiene extra ─────────────────────────────────────────────
+  comb:          ['Kawaii hair comb with cute smiling face on the spine, evenly spaced teeth, simple rounded handle. Mint green #8FD3B6 filled. White background.', '#8FD3B6'],
+  pillow:        ['Kawaii soft pillow with cute sleeping face, rounded rectangle shape, small indent lines. Lavender #BCACE4 filled. White background.', '#BCACE4'],
+  // ── screen time / wait ────────────────────────────────────────
+  tablet:        ['Kawaii tablet/iPad with cute smiling face on the screen, simple home button, rounded rectangle device. Lavender #BCACE4 filled screen bezel. White background.', '#BCACE4'],
+  wait:          ['Kawaii hourglass with cute patient smiling face, sand flowing from top to bottom, rounded hourglass shape. Sky blue #93C2E6 filled. White background.', '#93C2E6'],
+  medicine:      ['Kawaii medicine spoon with a friendly round pill or liquid dose on it, cute smiling face, soft and non-scary. Coral #EFA79E filled. White background.', '#EFA79E'],
   // ── potty ────────────────────────────────────────────────────
   toilet:        ['Kawaii friendly toilet with cute smiling face on the bowl, round seat up, simple rounded shape. Sky blue #93C2E6 filled bowl. White background.', '#93C2E6'],
   toilet_paper:  ['Kawaii toilet paper roll on holder, cute smiling face on the roll, single sheet hanging down. Mint green #8FD3B6 filled roll. White background.', '#8FD3B6'],
