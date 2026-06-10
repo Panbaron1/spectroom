@@ -77,6 +77,23 @@ class Prefs {
     await p.setInt(_kCountdownN, n);
   }
 
+  static const _kBuilderPin = 'builder_pin_v1';
+
+  /// null = no PIN set
+  static Future<String?> builderPin() async {
+    final p = await SharedPreferences.getInstance();
+    return p.getString(_kBuilderPin);
+  }
+
+  static Future<void> setBuilderPin(String? pin) async {
+    final p = await SharedPreferences.getInstance();
+    if (pin == null) {
+      await p.remove(_kBuilderPin);
+    } else {
+      await p.setString(_kBuilderPin, pin);
+    }
+  }
+
   /// true = min:sec format (e.g. "2:30"), false = total seconds (e.g. "150")
   static Future<bool> timerDisplayMinSec() async {
     final p = await SharedPreferences.getInstance();

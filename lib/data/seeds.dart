@@ -34,21 +34,6 @@ final List<Challenge> seedChallenges = [
     ],
   ),
   Challenge(
-    id: 'seed.vaccination',
-    titleCs: 'Očkování',
-    titleEn: 'Vaccination',
-    category: ChallengeCategory.medical,
-    cover: const PictogramRef.asset('syringe'),
-    steps: [
-      const ChallengeStep(id: 'vaccination.1', kind: StepKind.info, pictogram: PictogramRef.asset('door'), labelCs: 'Přijdeme k doktorovi', labelEn: 'Arrive at doctor'),
-      const ChallengeStep(id: 'vaccination.wait', kind: StepKind.timer, pictogram: PictogramRef.asset('wait'), labelCs: 'Čekáme v čekárně', labelEn: 'Wait in waiting room', durationSec: 300),
-      const ChallengeStep(id: 'vaccination.2', kind: StepKind.info, pictogram: PictogramRef.asset('sit'), labelCs: 'Sedíš u maminky', labelEn: 'Sit with mummy'),
-      const ChallengeStep(id: 'vaccination.3', kind: StepKind.timer, pictogram: PictogramRef.asset('syringe'), labelCs: 'Rychlé pípnutí', labelEn: 'Quick pinch', durationSec: 5),
-      const ChallengeStep(id: 'vaccination.4', kind: StepKind.info, pictogram: PictogramRef.asset('plaster'), labelCs: 'Náplast', labelEn: 'Plaster'),
-      const ChallengeStep(id: 'vaccination.5', kind: StepKind.info, pictogram: PictogramRef.asset('reward_box'), labelCs: 'Odměna!', labelEn: 'Reward!'),
-    ],
-  ),
-  Challenge(
     id: 'seed.medicine',
     titleCs: 'Brát lék',
     titleEn: 'Take medicine',
@@ -239,6 +224,21 @@ final List<Challenge> seedChallenges = [
       const ChallengeStep(id: 'playground.5', kind: StepKind.timer, pictogram: PictogramRef.asset('ball'), labelCs: 'Hrajeme si', labelEn: 'Playtime', durationSec: 1800),
       const ChallengeStep(id: 'playground.6', kind: StepKind.info, pictogram: PictogramRef.asset('door'), labelCs: 'Jdeme domů', labelEn: 'Time to go home'),
       const ChallengeStep(id: 'playground.7', kind: StepKind.info, pictogram: PictogramRef.asset('faucet'), labelCs: 'Umyjeme ruce', labelEn: 'Wash hands'),
+    ],
+  ),
+  Challenge(
+    id: 'seed.vaccination',
+    titleCs: 'Očkování',
+    titleEn: 'Vaccination',
+    category: ChallengeCategory.medical,
+    cover: const PictogramRef.asset('syringe'),
+    steps: [
+      const ChallengeStep(id: 'vaccination.1', kind: StepKind.info, pictogram: PictogramRef.asset('door'), labelCs: 'Přijdeme k doktorovi', labelEn: 'Arrive at doctor'),
+      const ChallengeStep(id: 'vaccination.wait', kind: StepKind.timer, pictogram: PictogramRef.asset('wait'), labelCs: 'Čekáme v čekárně', labelEn: 'Wait in waiting room', durationSec: 300),
+      const ChallengeStep(id: 'vaccination.2', kind: StepKind.info, pictogram: PictogramRef.asset('sit'), labelCs: 'Sedíš u maminky', labelEn: 'Sit with mummy'),
+      const ChallengeStep(id: 'vaccination.3', kind: StepKind.timer, pictogram: PictogramRef.asset('syringe'), labelCs: 'Rychlé pípnutí', labelEn: 'Quick pinch', durationSec: 5),
+      const ChallengeStep(id: 'vaccination.4', kind: StepKind.info, pictogram: PictogramRef.asset('plaster'), labelCs: 'Náplast', labelEn: 'Plaster'),
+      const ChallengeStep(id: 'vaccination.5', kind: StepKind.info, pictogram: PictogramRef.asset('reward_box'), labelCs: 'Odměna!', labelEn: 'Reward!'),
     ],
   ),
 ];

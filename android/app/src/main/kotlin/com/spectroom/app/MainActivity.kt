@@ -1,4 +1,4 @@
-package com.spectroom.spectroom
+package com.spectroom.app
 
 import io.flutter.embedding.android.FlutterActivity
 

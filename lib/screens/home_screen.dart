@@ -12,6 +12,7 @@ import '../models/challenge.dart';
 import '../models/pictogram_ref.dart';
 import '../theme.dart';
 import '../widgets/pictogram_view.dart';
+import '../widgets/pin_dialog.dart';
 import 'builder_screen.dart';
 import 'runner_screen.dart';
 
@@ -349,11 +350,19 @@ void _run(BuildContext context, Challenge c, {required bool live}) {
   );
 }
 
-void _openBuilder(BuildContext context, Challenge? existing) {
-  Navigator.push(
-    context,
-    MaterialPageRoute(builder: (_) => BuilderScreen(existing: existing)),
-  );
+Future<void> _openBuilder(BuildContext context, Challenge? existing) async {
+  final pin = await Prefs.builderPin();
+  if (pin != null) {
+    if (!context.mounted) return;
+    final ok = await showPinAuth(context, pin);
+    if (!ok) return;
+  }
+  if (context.mounted) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => BuilderScreen(existing: existing)),
+    );
+  }
 }
 
 // ── Settings bottom sheet ────────────────────────────────────
@@ -372,6 +381,7 @@ class _SettingsSheetState extends State<_SettingsSheet> {
   bool _loaded = false;
   bool _exporting = false;
   bool _importing = false;
+  String? _builderPin;
   late final TextEditingController _vocativeCtrl;
 
   @override
@@ -383,6 +393,7 @@ class _SettingsSheetState extends State<_SettingsSheet> {
       Prefs.standaloneCountdownN(),
       Prefs.kidVocative(),
       Prefs.timerDisplayMinSec(),
+      Prefs.builderPin(),
     ]).then((vals) {
       if (mounted) {
         setState(() {
@@ -390,6 +401,7 @@ class _SettingsSheetState extends State<_SettingsSheet> {
           _countdownN = vals[1] as int;
           _vocativeCtrl.text = vals[2] as String;
           _timerDisplayMinSec = vals[3] as bool;
+          _builderPin = vals[4] as String?;
           _loaded = true;
         });
       }
@@ -546,6 +558,23 @@ class _SettingsSheetState extends State<_SettingsSheet> {
     } finally {
       if (mounted) setState(() => _importing = false);
     }
+  }
+
+  Future<void> _setPin(BuildContext ctx) async {
+    final newPin = await showPinSetup(ctx);
+    if (newPin == null) return;
+    await Prefs.setBuilderPin(newPin);
+    if (mounted) setState(() => _builderPin = newPin);
+  }
+
+  Future<void> _removePin(BuildContext ctx) async {
+    // Ask the current PIN before removing
+    if (_builderPin != null) {
+      final ok = await showPinAuth(ctx, _builderPin!);
+      if (!ok) return;
+    }
+    await Prefs.setBuilderPin(null);
+    if (mounted) setState(() => _builderPin = null);
   }
 
   @override
@@ -775,7 +804,6 @@ class _SettingsSheetState extends State<_SettingsSheet> {
                     loading: _exporting,
                     onTap: () => _doExport(context),
                   ),
-                  const Divider(height: 1, indent: 56),
                   _ActionRow(
                     icon: Icons.download_rounded,
                     color: Spectrum.amber,
@@ -791,6 +819,50 @@ class _SettingsSheetState extends State<_SettingsSheet> {
             ),
             const SizedBox(height: Gap.lg),
 
+            // ── Builder lock ─────────────────────────────────────
+            _SectionLabel(lang == 'en' ? 'BUILDER LOCK' : 'ZÁMEK EDITORU'),
+            const SizedBox(height: 8),
+            _SettingsCard(
+              child: Column(
+                children: [
+                  if (_builderPin == null)
+                    _ActionRow(
+                      icon: Icons.lock_open_rounded,
+                      color: Spectrum.coral,
+                      title: lang == 'en' ? 'Set PIN' : 'Nastavit PIN',
+                      subtitle: lang == 'en'
+                          ? 'Protect the challenge builder with a 4-digit PIN'
+                          : 'Chraňte editor výzev 4místným PINem',
+                      loading: false,
+                      onTap: () => _setPin(context),
+                    )
+                  else ...[
+                    _ActionRow(
+                      icon: Icons.lock_rounded,
+                      color: Spectrum.coral,
+                      title: lang == 'en' ? 'Change PIN' : 'Změnit PIN',
+                      subtitle: lang == 'en'
+                          ? 'Builder is locked — tap to set a new PIN'
+                          : 'Editor je zamčený — klepněte pro nový PIN',
+                      loading: false,
+                      onTap: () => _setPin(context),
+                    ),
+                    _ActionRow(
+                      icon: Icons.no_encryption_rounded,
+                      color: Spectrum.inkSoft,
+                      title: lang == 'en' ? 'Remove PIN' : 'Odebrat PIN',
+                      subtitle: lang == 'en'
+                          ? 'Unlock the builder (enter current PIN first)'
+                          : 'Odemknout editor (nejprve zadejte aktuální PIN)',
+                      loading: false,
+                      onTap: () => _removePin(context),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: Gap.lg),
+
             // ── Help & About ─────────────────────────────────────
             _SectionLabel(lang == 'en' ? 'INFO' : 'INFO'),
             const SizedBox(height: 8),
@@ -798,7 +870,6 @@ class _SettingsSheetState extends State<_SettingsSheet> {
               child: Column(
                 children: [
                   _HowItWorksRow(lang: lang),
-                  const Divider(height: 1, indent: 56),
                   Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: Gap.md, vertical: 14),
@@ -1172,22 +1243,37 @@ class _HowItWorksRowState extends State<_HowItWorksRow> {
   @override
   Widget build(BuildContext context) {
     final cs = widget.lang == 'cs';
+    final description = cs
+        ? 'Aplikace pro vizuální přípravu dětí na rutiny a nové situace.'
+        : 'Visual preparation app for children facing routines and new situations.';
     final bullets = cs
         ? [
-            'Spectroom má předpřipravené výzvy: zubaře, oblékání, stříhání nehtů i vlasů a výlet k doktorovi.',
-            'Každou výzvu si lze nejdřív prohlédnout krok za krokem — bez tlaku, jen jako přípravu.',
-            'V živém režimu provede dítě celou rutinou: obrázek za obrázkem, s odpočítáváním nebo časovačem.',
-            'Rodiče mohou přidávat vlastní výzvy: klepněte na „+" a zadejte název, kategorii a kroky.',
-            'Ke každému kroku přiřaďte obrázek — klepněte na čtvereček s ikonou fotoaparátu.',
-            'Krok může být jen obrázek (informace), odpočet čísel nebo vizuální časovač.',
+            'Obsahuje 16 předpřipravených výzev: zuby, oblékání, koupání, snídaně, spánek, hřiště, doktor, očkování, kadeřník, nehty, zklidnění, léky a další.',
+            'Každou výzvu si lze nejdřív prohlédnout krok za krokem — bez stresu, jen jako přípravu.',
+            'V živém režimu provede dítě celou rutinou obrázek za obrázkem, se zvukem a animací.',
+            'Kroky mohou být: obrázková karta (informace), odpočet čísel nebo vizuální časovač s kruhovým průběhem.',
+            'Ráno, před spaním nebo při zklidňování — kroky s časovačem dítěti ukáží, jak dlouho daná věc trvá.',
+            'Rodiče vytvářejí vlastní výzvy klepnutím na „+" — název, kategorie, kroky s vlastními fotkami.',
+            'Ke každému kroku lze nahrát hlas rodiče — dítě uslyší známý hlas přímo v aplikaci.',
+            'Záloha a obnova: výzvy lze exportovat jako JSON a kdykoli obnovit.',
+            'Zobrazení časovače: přepínač mezi formátem 2:30 (min:sek) nebo 150 (sekundy).',
+            'Zámek editoru: editor výzev lze chránit 4místným PINem, aby ho dítě náhodou nepřepsalo.',
+            'Jazyk aplikace: čeština nebo angličtina, přepínač v nastavení.',
+            'Jméno dítěte (5. pád): aplikace oslovuje dítě jménem při oslavě splněné výzvy.',
           ]
         : [
-            'Spectroom comes with built-in challenges: dentist, getting dressed, nail clipping, haircut, and doctor visits.',
-            'Any challenge can be previewed step-by-step first — no pressure, just preparation.',
-            'In live mode the app guides your child picture by picture, with countdown or visual timer.',
-            'Parents can create custom challenges: tap "+" and enter a name, category, and steps.',
-            'For each step, assign a picture — take a photo or pick from the gallery.',
-            'A step can be a plain picture card, a countdown (1, 2, 3…), or a visual timer.',
+            'Includes 16 built-in challenges: teeth, getting dressed, bath, breakfast, bedtime, playground, doctor, vaccination, haircut, nails, calm-down, medicine, and more.',
+            'Any challenge can be previewed step-by-step first — no pressure, just calm preparation.',
+            'In live mode the app guides your child picture by picture, with sound and animation.',
+            'Steps can be: picture card (information), number countdown, or a visual timer with circular progress.',
+            'Morning routine, bedtime, or calming down — timer steps show the child exactly how long something takes.',
+            'Parents create custom challenges with the "+" button — name, category, steps with your own photos.',
+            'Record your voice for any step — your child hears your voice playing directly in the app.',
+            'Backup & restore: export all challenges as JSON and import them back anytime.',
+            'Timer display: toggle between 2:30 (min:sec) format or plain seconds (150).',
+            'Builder lock: protect the challenge editor with a 4-digit PIN so the child can\'t accidentally edit.',
+            'Language: Czech or English, switchable in settings.',
+            'Child\'s name: the app addresses your child by name when celebrating a completed challenge.',
           ];
 
     return Column(
@@ -1212,9 +1298,17 @@ class _HowItWorksRowState extends State<_HowItWorksRow> {
                 ),
                 const SizedBox(width: Gap.sm),
                 Expanded(
-                  child: Text(cs ? 'Jak to funguje' : 'How it works',
-                      style: const TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.w600)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(cs ? 'Jak to funguje' : 'How it works',
+                          style: const TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.w600)),
+                      Text(description,
+                          style: const TextStyle(
+                              fontSize: 12, color: Spectrum.inkSoft)),
+                    ],
+                  ),
                 ),
                 Icon(
                   _expanded
