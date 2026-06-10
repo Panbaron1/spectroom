@@ -234,6 +234,7 @@ class _BuilderScreenState extends State<BuilderScreen> {
           ReorderableListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
+            buildDefaultDragHandles: false,
             itemCount: _steps.length,
             onReorderItem: (oldIndex, newIndex) {
               setState(() {
@@ -504,6 +505,14 @@ class _StepEditor extends StatelessWidget {
                           size: 18, color: Spectrum.inkSoft),
                     ),
                   ),
+                ReorderableDragStartListener(
+                  index: index,
+                  child: const Padding(
+                    padding: EdgeInsets.all(4),
+                    child: Icon(Icons.drag_handle_rounded,
+                        size: 22, color: Spectrum.inkSoft),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: Gap.sm),
