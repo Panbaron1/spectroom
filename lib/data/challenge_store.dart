@@ -76,6 +76,14 @@ class ChallengeStore extends ChangeNotifier {
     notifyListeners();
   }
 
+  Challenge? byId(String id) {
+    try {
+      return all.firstWhere((c) => c.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> delete(String id) async {
     _custom.removeWhere((c) => c.id == id);
     await _persist();

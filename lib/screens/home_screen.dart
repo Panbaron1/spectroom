@@ -15,6 +15,7 @@ import '../widgets/pictogram_view.dart';
 import '../widgets/pin_dialog.dart';
 import 'builder_screen.dart';
 import 'runner_screen.dart';
+import 'schedule_screen.dart';
 
 /// Library of challenges. Tap a card → pick Rehearsal or Live. FAB → build your
 /// own. Long-press a parent-made card → edit/delete.
@@ -100,6 +101,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                 style: const TextStyle(
                                     fontSize: 15, color: Spectrum.inkSoft)),
                             ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.notifications_rounded),
+                          color: Spectrum.inkSoft,
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const ScheduleScreen()),
                           ),
                         ),
                         IconButton(

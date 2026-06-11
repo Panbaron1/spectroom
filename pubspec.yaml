@@ -45,6 +45,8 @@ dependencies:
   audioplayers: ^6.0.0       # countdown tick + celebration chime + voice playback
   record: ^7.0.0             # parent voice recording per step
   share_plus: ^13.1.0
+  flutter_local_notifications: ^18.0.0  # daily reminders
+  timezone: ^0.9.4                       # tz-aware scheduling
 
 dev_dependencies:
   flutter_test:

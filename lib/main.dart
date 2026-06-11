@@ -4,8 +4,10 @@ import 'package:flutter/services.dart';
 import 'data/challenge_store.dart';
 import 'data/lang_store.dart';
 import 'data/prefs.dart';
+import 'data/schedule_store.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'services/notification_service.dart';
 import 'theme.dart';
 
 Future<void> main() async {
@@ -16,10 +18,13 @@ Future<void> main() async {
     systemNavigationBarColor: Colors.transparent,
     systemNavigationBarIconBrightness: Brightness.dark,
   ));
+  await NotificationService.instance.init();
   await Future.wait([
     ChallengeStore.instance.load(),
     LangStore.instance.load(),
+    ScheduleStore.instance.load(),
   ]);
+  await ScheduleStore.instance.rescheduleAll();
   final seen = await Prefs.seenOnboarding();
   runApp(SpectroomApp(showOnboarding: !seen));
 }
