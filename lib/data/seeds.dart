@@ -25,6 +25,7 @@ final List<Challenge> seedChallenges = [
     cover: const PictogramRef.asset('dentist'),
     steps: [
       const ChallengeStep(id: 'dentist.1', kind: StepKind.info, pictogram: PictogramRef.asset('door'), labelCs: 'Jdeme do ordinace', labelEn: 'Going to the clinic'),
+      const ChallengeStep(id: 'dentist.meet', kind: StepKind.info, pictogram: PictogramRef.asset('doctor'), labelCs: 'Seznámení s panem doktorem/paní doktorkou', labelEn: 'Meeting the doctor'),
       const ChallengeStep(id: 'dentist.2', kind: StepKind.info, pictogram: PictogramRef.asset('chair'), labelCs: 'Kouzelné křeslo jezdí nahoru a dolů', labelEn: 'Magic chair goes up and down'),
       const ChallengeStep(id: 'dentist.3', kind: StepKind.info, pictogram: PictogramRef.asset('sit'), labelCs: 'Sedíš u maminky na klíně', labelEn: 'You sit on mummy\'s lap'),
       const ChallengeStep(id: 'dentist.4', kind: StepKind.info, pictogram: PictogramRef.asset('dentist'), labelCs: 'Sloní chobot pije vodu, foukátko fouká', labelEn: 'Elephant trunk drinks water, blower blows air'),

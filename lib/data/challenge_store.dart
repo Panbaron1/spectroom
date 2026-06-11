@@ -27,10 +27,21 @@ class ChallengeStore extends ChangeNotifier {
         final c = customById[s.id];
         if (c == null) return s;
         // Heal: builder bug wrote titleEn = titleCs; restore seed's English title
-        if (c.titleEn == c.titleCs && s.titleEn != s.titleCs) {
-          return c.copyWith(titleEn: s.titleEn);
-        }
-        return c;
+        var healed = (c.titleEn == c.titleCs && s.titleEn != s.titleCs)
+            ? c.copyWith(titleEn: s.titleEn)
+            : c;
+        // Heal seed steps: use seed ordering, merge stored data (e.g. voice),
+        // heal missing labelEn, and pick up any new seed steps added later.
+        final storedById = Map.fromEntries(healed.steps.map((st) => MapEntry(st.id, st)));
+        final healedSteps = s.steps.map((seedSt) {
+          final stored = storedById[seedSt.id];
+          if (stored == null) return seedSt; // new seed step — use as-is
+          // Prefer stored data but fix empty labelEn from seed
+          return stored.labelEn.isEmpty
+              ? stored.copyWith(labelEn: seedSt.labelEn)
+              : stored;
+        }).toList();
+        return healed.copyWith(steps: healedSteps);
       }),
       ..._custom.where((c) => !seedChallenges.any((s) => s.id == c.id)),
     ];
