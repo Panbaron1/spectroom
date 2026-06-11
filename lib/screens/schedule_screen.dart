@@ -9,8 +9,20 @@ import '../services/notification_service.dart';
 import '../theme.dart';
 import '../widgets/pictogram_view.dart';
 
-class ScheduleScreen extends StatelessWidget {
+class ScheduleScreen extends StatefulWidget {
   const ScheduleScreen({super.key});
+
+  @override
+  State<ScheduleScreen> createState() => _ScheduleScreenState();
+}
+
+class _ScheduleScreenState extends State<ScheduleScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Request once on open — not on every add press.
+    NotificationService.instance.requestPermission();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,9 +76,6 @@ class ScheduleScreen extends StatelessWidget {
   }
 
   Future<void> _showAddFlow(BuildContext context, String lang) async {
-    await NotificationService.instance.requestPermission();
-    if (!context.mounted) return;
-
     final challenge = await showModalBottomSheet<Challenge>(
       context: context,
       isScrollControlled: true,
