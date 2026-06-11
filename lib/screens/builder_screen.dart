@@ -439,21 +439,24 @@ class _StepEditor extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    color: accent.withValues(alpha: 0.18),
-                    shape: BoxShape.circle,
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: accent.withValues(alpha: 0.18),
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: Text('${index + 1}',
+                        style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: accent)),
                   ),
-                  alignment: Alignment.center,
-                  child: Text('${index + 1}',
-                      style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: accent)),
                 ),
                 const SizedBox(width: Gap.sm),
                 _PictogramPicker(
@@ -469,6 +472,8 @@ class _StepEditor extends StatelessWidget {
                 Expanded(
                   child: TextField(
                     controller: draft.labelFor(lang),
+                    maxLines: null,
+                    minLines: 1,
                     style: const TextStyle(
                         fontSize: 16, fontWeight: FontWeight.w500),
                     decoration: InputDecoration(
@@ -482,22 +487,25 @@ class _StepEditor extends StatelessWidget {
                       enabledBorder: InputBorder.none,
                       isDense: true,
                       contentPadding:
-                          const EdgeInsets.symmetric(vertical: 4),
+                          const EdgeInsets.symmetric(vertical: 6),
                     ),
                   ),
                 ),
-                GestureDetector(
-                  onTap: () => _openVoiceSheet(context),
-                  child: Padding(
-                    padding: const EdgeInsets.all(4),
-                    child: Icon(
-                      draft.audioPath != null
-                          ? Icons.mic_rounded
-                          : Icons.mic_none_rounded,
-                      size: 20,
-                      color: draft.audioPath != null
-                          ? Spectrum.coral
-                          : Spectrum.inkSoft,
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: GestureDetector(
+                    onTap: () => _openVoiceSheet(context),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Icon(
+                        draft.audioPath != null
+                            ? Icons.mic_rounded
+                            : Icons.mic_none_rounded,
+                        size: 20,
+                        color: draft.audioPath != null
+                            ? Spectrum.coral
+                            : Spectrum.inkSoft,
+                      ),
                     ),
                   ),
                 ),
