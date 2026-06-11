@@ -18,13 +18,13 @@ Future<void> main() async {
     systemNavigationBarColor: Colors.transparent,
     systemNavigationBarIconBrightness: Brightness.dark,
   ));
-  await NotificationService.instance.init();
+  try { await NotificationService.instance.init(); } catch (_) {}
   await Future.wait([
     ChallengeStore.instance.load(),
     LangStore.instance.load(),
     ScheduleStore.instance.load(),
   ]);
-  await ScheduleStore.instance.rescheduleAll();
+  try { await ScheduleStore.instance.rescheduleAll(); } catch (_) {}
   final seen = await Prefs.seenOnboarding();
   runApp(SpectroomApp(showOnboarding: !seen));
 }

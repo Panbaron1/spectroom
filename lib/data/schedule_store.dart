@@ -118,18 +118,22 @@ class ScheduleStore extends ChangeNotifier {
   }
 
   Future<void> _scheduleEntry(ScheduleEntry e) async {
-    final challenge = ChallengeStore.instance.byId(e.challengeId);
-    if (challenge == null) return;
-    final lang = LangStore.instance.lang;
-    final title = lang == 'en' ? challenge.titleEn : challenge.titleCs;
-    final body = lang == 'en' ? 'Time for your routine' : 'Čas na vaši rutinu';
-    await NotificationService.instance.scheduleDaily(
-      id: NotificationService.instance.notifId(e.id),
-      title: title,
-      body: body,
-      hour: e.hour,
-      minute: e.minute,
-    );
+    try {
+      final challenge = ChallengeStore.instance.byId(e.challengeId);
+      if (challenge == null) return;
+      final lang = LangStore.instance.lang;
+      final title = lang == 'en' ? challenge.titleEn : challenge.titleCs;
+      final body = lang == 'en' ? 'Time for your routine' : 'Čas na vaši rutinu';
+      await NotificationService.instance.scheduleDaily(
+        id: NotificationService.instance.notifId(e.id),
+        title: title,
+        body: body,
+        hour: e.hour,
+        minute: e.minute,
+      );
+    } catch (err) {
+      debugPrint('scheduleEntry failed for ${e.id}: $err');
+    }
   }
 
   Future<void> _save() async {
