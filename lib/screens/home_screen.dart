@@ -1286,6 +1286,7 @@ class _HowItWorksRowState extends State<_HowItWorksRow> {
             'Zámek editoru: editor výzev lze chránit 4místným PINem, aby ho dítě náhodou nepřepsalo.',
             'Jazyk aplikace: čeština nebo angličtina, přepínač v nastavení.',
             'Jméno dítěte (5. pád): aplikace oslovuje dítě jménem při oslavě splněné výzvy.',
+            'Denní připomínky: nastavte čas, vyberte výzvu a aplikace vám každý den pošle upozornění — ikona zvonku v hlavní obrazovce.',
           ]
         : [
             'Includes 16 built-in challenges: teeth, getting dressed, bath, breakfast, bedtime, playground, doctor, vaccination, haircut, nails, calm-down, medicine, and more.',
@@ -1300,6 +1301,7 @@ class _HowItWorksRowState extends State<_HowItWorksRow> {
             'Builder lock: protect the challenge editor with a 4-digit PIN so the child can\'t accidentally edit.',
             'Language: Czech or English, switchable in settings.',
             'Child\'s name: the app addresses your child by name when celebrating a completed challenge.',
+            'Daily reminders: set a time, pick a challenge, and the app sends a notification every day — bell icon in the home screen.',
           ];
 
     return Column(
