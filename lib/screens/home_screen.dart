@@ -719,43 +719,38 @@ class _SettingsSheetState extends State<_SettingsSheet> {
             // ── Language ─────────────────────────────────────────
             _SectionLabel(lang == 'en' ? 'LANGUAGE' : 'JAZYK'),
             const SizedBox(height: 8),
-            _SettingsCard(
-              child: Padding(
-                padding: const EdgeInsets.all(Gap.md),
-                child: AnimatedBuilder(
-                  animation: LangStore.instance,
-                  builder: (context, _) {
-                    final cur = LangStore.instance.lang;
-                    return Row(
-                      children: [
-                        Expanded(
-                          child: _LangChip(
-                            flag: '🇨🇿',
-                            label: 'Čeština',
-                            selected: cur == 'cs',
-                            onTap: () {
-                              LangStore.instance.setLang('cs');
-                              setState(() {});
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _LangChip(
-                            flag: '🇬🇧',
-                            label: 'English',
-                            selected: cur == 'en',
-                            onTap: () {
-                              LangStore.instance.setLang('en');
-                              setState(() {});
-                            },
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
+            AnimatedBuilder(
+              animation: LangStore.instance,
+              builder: (context, _) {
+                final cur = LangStore.instance.lang;
+                return Column(
+                  children: [
+                    _SettingsLangTile(
+                      code: 'CS',
+                      label: 'Čeština',
+                      sublabel: 'Česky',
+                      accent: Spectrum.coral,
+                      selected: cur == 'cs',
+                      onTap: () {
+                        LangStore.instance.setLang('cs');
+                        setState(() {});
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    _SettingsLangTile(
+                      code: 'EN',
+                      label: 'English',
+                      sublabel: 'In English',
+                      accent: Spectrum.sky,
+                      selected: cur == 'en',
+                      onTap: () {
+                        LangStore.instance.setLang('en');
+                        setState(() {});
+                      },
+                    ),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: Gap.lg),
 
@@ -1385,13 +1380,17 @@ class _HowItWorksRowState extends State<_HowItWorksRow> {
   }
 }
 
-class _LangChip extends StatelessWidget {
-  final String flag, label;
+class _SettingsLangTile extends StatelessWidget {
+  final String code, label, sublabel;
+  final Color accent;
   final bool selected;
   final VoidCallback onTap;
-  const _LangChip({
-    required this.flag,
+
+  const _SettingsLangTile({
+    required this.code,
     required this.label,
+    required this.sublabel,
+    required this.accent,
     required this.selected,
     required this.onTap,
   });
@@ -1401,30 +1400,73 @@ class _LangChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        height: 52,
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOut,
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
         decoration: BoxDecoration(
-          color: selected
-              ? Spectrum.sky.withValues(alpha: 0.15)
-              : Spectrum.bg,
-          borderRadius: BorderRadius.circular(Radii.sm),
+          color: selected ? accent.withValues(alpha: 0.10) : Spectrum.surface,
+          borderRadius: BorderRadius.circular(Radii.lg),
           border: Border.all(
-            color: selected
-                ? Spectrum.sky
-                : Spectrum.inkSoft.withValues(alpha: 0.2),
-            width: selected ? 2 : 1,
+            color: selected ? accent : Spectrum.inkSoft.withValues(alpha: 0.15),
+            width: selected ? 2.5 : 1,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: selected
+                  ? accent.withValues(alpha: 0.14)
+                  : Spectrum.ink.withValues(alpha: 0.04),
+              blurRadius: selected ? 20 : 8,
+              offset: const Offset(0, 5),
+            ),
+          ],
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(flag, style: const TextStyle(fontSize: 20)),
-            const SizedBox(width: 8),
-            Text(label,
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: selected ? accent : accent.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                code,
                 style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: selected ? Spectrum.sky : Spectrum.inkSoft)),
+                  fontFamily: 'Geist',
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.5,
+                  color: selected ? Colors.white : accent,
+                ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label,
+                      style: TextStyle(
+                          fontFamily: 'Geist',
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.2,
+                          color: selected ? accent : Spectrum.ink)),
+                  const SizedBox(height: 1),
+                  Text(sublabel,
+                      style: const TextStyle(
+                          fontSize: 12, color: Spectrum.inkSoft)),
+                ],
+              ),
+            ),
+            AnimatedOpacity(
+              duration: const Duration(milliseconds: 200),
+              opacity: selected ? 1.0 : 0.0,
+              child: Icon(Icons.check_circle_rounded, color: accent, size: 22),
+            ),
           ],
         ),
       ),

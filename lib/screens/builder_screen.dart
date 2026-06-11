@@ -1055,6 +1055,7 @@ class _StepDraft {
         kind: kind,
         pictogram: pictogram,
         labelCs: labelCs.text.trim(),
+        labelEn: labelCs.text.trim(), // single field → same text in both langs
         count: kind == StepKind.countdown
             ? int.tryParse(count.text) ?? 10
             : null,
