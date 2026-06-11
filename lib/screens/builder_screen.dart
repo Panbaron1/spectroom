@@ -30,6 +30,7 @@ class BuilderScreen extends StatefulWidget {
 
 class _BuilderScreenState extends State<BuilderScreen> {
   late final TextEditingController _title;
+  late final TextEditingController _titleEn;
   late ChallengeCategory _category;
   late PictogramRef _cover;
   late List<_StepDraft> _steps;
@@ -43,6 +44,7 @@ class _BuilderScreenState extends State<BuilderScreen> {
     final e = widget.existing;
     _id = e?.id ?? 'custom.${_uuid.v4()}';
     _title = TextEditingController(text: e?.titleCs ?? '');
+    _titleEn = TextEditingController(text: e?.titleEn ?? '');
     _category = e?.category ?? ChallengeCategory.routine;
     _cover = e?.cover ?? const PictogramRef.asset('star');
     _steps = (e?.steps ?? <ChallengeStep>[]).map(_StepDraft.from).toList();
@@ -52,23 +54,26 @@ class _BuilderScreenState extends State<BuilderScreen> {
   @override
   void dispose() {
     _title.dispose();
+    _titleEn.dispose();
     for (final s in _steps) { s.dispose(); }
     super.dispose();
   }
 
   Future<void> _save() async {
-    if (_title.text.trim().isEmpty) {
+    final _activeTitle = _lang == 'en' ? _titleEn : _title;
+    if (_activeTitle.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(_lang == 'en' ? 'Enter a title' : 'Zadej název'),
         behavior: SnackBarBehavior.floating,
       ));
       return;
     }
-    final t = _title.text.trim();
+    final cs = _title.text.trim();
+    final en = _titleEn.text.trim();
     final challenge = Challenge(
       id: _id,
-      titleCs: t,
-      titleEn: widget.existing?.titleEn ?? t,
+      titleCs: cs.isEmpty ? en : cs,
+      titleEn: en.isEmpty ? cs : en,
       category: _category,
       cover: _cover,
       steps: _steps.map((s) => s.toStep()).toList(),
@@ -157,7 +162,7 @@ class _BuilderScreenState extends State<BuilderScreen> {
                 const SizedBox(width: Gap.md),
                 Expanded(
                   child: TextField(
-                    controller: _title,
+                    controller: _lang == 'en' ? _titleEn : _title,
                     style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
@@ -463,7 +468,7 @@ class _StepEditor extends StatelessWidget {
                 const SizedBox(width: Gap.sm),
                 Expanded(
                   child: TextField(
-                    controller: draft.labelCs,
+                    controller: draft.labelFor(lang),
                     style: const TextStyle(
                         fontSize: 16, fontWeight: FontWeight.w500),
                     decoration: InputDecoration(
@@ -1018,14 +1023,18 @@ class _StepDraft {
   PictogramRef pictogram;
   String? audioPath;
   final TextEditingController labelCs;
+  final TextEditingController labelEn;
   final TextEditingController count;
   final TextEditingController duration;
+
+  TextEditingController labelFor(String lang) => lang == 'en' ? labelEn : labelCs;
 
   _StepDraft({
     required this.key,
     required this.kind,
     required this.pictogram,
     required this.labelCs,
+    required this.labelEn,
     required this.count,
     required this.duration,
     this.audioPath,
@@ -1036,6 +1045,7 @@ class _StepDraft {
         kind: StepKind.info,
         pictogram: const PictogramRef.asset('star'),
         labelCs: TextEditingController(),
+        labelEn: TextEditingController(),
         count: TextEditingController(text: '10'),
         duration: TextEditingController(text: '60'),
       );
@@ -1044,18 +1054,19 @@ class _StepDraft {
         key: s.id,
         kind: s.kind,
         pictogram: s.pictogram,
+        audioPath: s.audioPath,
         labelCs: TextEditingController(text: s.labelCs),
+        labelEn: TextEditingController(text: s.labelEn),
         count: TextEditingController(text: '${s.count ?? 10}'),
         duration: TextEditingController(text: '${s.durationSec ?? 60}'),
-        audioPath: s.audioPath,
       );
 
   ChallengeStep toStep() => ChallengeStep(
         id: key,
         kind: kind,
         pictogram: pictogram,
-        labelCs: labelCs.text.trim(),
-        labelEn: labelCs.text.trim(), // single field → same text in both langs
+        labelCs: labelCs.text.trim().isEmpty ? labelEn.text.trim() : labelCs.text.trim(),
+        labelEn: labelEn.text.trim().isEmpty ? labelCs.text.trim() : labelEn.text.trim(),
         count: kind == StepKind.countdown
             ? int.tryParse(count.text) ?? 10
             : null,
@@ -1067,6 +1078,7 @@ class _StepDraft {
 
   void dispose() {
     labelCs.dispose();
+    labelEn.dispose();
     count.dispose();
     duration.dispose();
   }
