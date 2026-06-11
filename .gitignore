@@ -45,4 +45,6 @@ app.*.map.json
 /android/app/release
 node_modules/
 android/build/
+android/key.properties
+android/spectroom-release.keystore
 *.0.0-*

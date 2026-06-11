@@ -920,7 +920,7 @@ class _SettingsSheetState extends State<_SettingsSheet> {
                                     fontSize: 15,
                                     fontWeight: FontWeight.w600)),
                             const Text(
-                                'v0.6 · Mulberry Symbols (CC BY-SA 4.0)',
+                                'v1.3 · Mulberry Symbols (CC BY-SA 4.0)\nsymbols.straight-street.com',
                                 style: TextStyle(
                                     fontSize: 11, color: Spectrum.inkSoft)),
                           ],
