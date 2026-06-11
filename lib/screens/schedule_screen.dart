@@ -49,7 +49,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         iconTheme: const IconThemeData(color: Spectrum.inkSoft),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddFlow(context, lang),
+        onPressed: () => _showAddFlow(lang),
         backgroundColor: Spectrum.ink,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add_rounded),
@@ -75,7 +75,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     );
   }
 
-  Future<void> _showAddFlow(BuildContext context, String lang) async {
+  Future<void> _showAddFlow(String lang) async {
     final challenge = await showModalBottomSheet<Challenge>(
       context: context,
       isScrollControlled: true,
@@ -86,7 +86,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               BorderRadius.vertical(top: Radius.circular(Radii.lg))),
       builder: (_) => _ChallengePickerSheet(lang: lang),
     );
-    if (challenge == null || !context.mounted) return;
+    if (challenge == null || !mounted) return;
 
     final time = await showTimePicker(
       context: context,
@@ -130,7 +130,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         ),
       ),
     );
-    if (time == null || !context.mounted) return;
+    if (time == null || !mounted) return;
 
     await ScheduleStore.instance.add(
       challengeId: challenge.id,
@@ -138,7 +138,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       minute: time.minute,
     );
 
-    if (context.mounted) {
+    if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(lang == 'en'
             ? 'Reminder set for ${time.hour.toString().padLeft(2, "0")}:${time.minute.toString().padLeft(2, "0")} daily'

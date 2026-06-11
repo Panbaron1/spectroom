@@ -85,8 +85,8 @@ class ScheduleStore extends ChangeNotifier {
     );
     _entries.add(entry);
     await _save();
-    await _scheduleEntry(entry);
     notifyListeners();
+    await _scheduleEntry(entry);
   }
 
   Future<void> remove(String id) async {
