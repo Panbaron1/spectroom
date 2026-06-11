@@ -30,23 +30,20 @@ class ChallengeStore extends ChangeNotifier {
         var healed = (c.titleEn == c.titleCs && s.titleEn != s.titleCs)
             ? c.copyWith(titleEn: s.titleEn)
             : c;
-        // Heal seed steps: use seed ordering, merge stored data (e.g. voice),
-        // heal missing labelEn, and pick up any new seed steps added later.
-        final storedById = Map.fromEntries(healed.steps.map((st) => MapEntry(st.id, st)));
-        final healedSteps = s.steps.map((seedSt) {
-          final stored = storedById[seedSt.id];
-          if (stored == null) return seedSt; // new seed step — use as-is
-          // Prefer stored data but fix missing/corrupt labelEn from seed.
-          // Empty → never populated. Equal to labelCs → old builder bug
-          // wrote Czech to both fields. In both cases restore from seed.
-          final corrupt = stored.labelEn.isEmpty ||
-              (stored.labelEn == stored.labelCs &&
-                  seedSt.labelEn != seedSt.labelCs);
-          return corrupt
-              ? stored.copyWith(labelEn: seedSt.labelEn)
-              : stored;
+        // Heal seed steps: iterate STORED steps (preserves user edits —
+        // additions, deletions, reorder), fix corrupt labelEn, then append
+        // any new seed steps that didn't exist in the stored version.
+        final seedStepsById = Map.fromEntries(s.steps.map((st) => MapEntry(st.id, st)));
+        final healedSteps = healed.steps.map((st) {
+          final seedSt = seedStepsById[st.id];
+          if (seedSt == null) return st; // user-added step, keep as-is
+          final corrupt = st.labelEn.isEmpty ||
+              (st.labelEn == st.labelCs && seedSt.labelEn != seedSt.labelCs);
+          return corrupt ? st.copyWith(labelEn: seedSt.labelEn) : st;
         }).toList();
-        return healed.copyWith(steps: healedSteps);
+        final storedIds = {for (final st in healed.steps) st.id};
+        final newSeedSteps = s.steps.where((st) => !storedIds.contains(st.id)).toList();
+        return healed.copyWith(steps: [...healedSteps, ...newSeedSteps]);
       }),
       ..._custom.where((c) => !seedChallenges.any((s) => s.id == c.id)),
     ];
