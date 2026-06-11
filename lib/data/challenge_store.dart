@@ -36,8 +36,13 @@ class ChallengeStore extends ChangeNotifier {
         final healedSteps = s.steps.map((seedSt) {
           final stored = storedById[seedSt.id];
           if (stored == null) return seedSt; // new seed step — use as-is
-          // Prefer stored data but fix empty labelEn from seed
-          return stored.labelEn.isEmpty
+          // Prefer stored data but fix missing/corrupt labelEn from seed.
+          // Empty → never populated. Equal to labelCs → old builder bug
+          // wrote Czech to both fields. In both cases restore from seed.
+          final corrupt = stored.labelEn.isEmpty ||
+              (stored.labelEn == stored.labelCs &&
+                  seedSt.labelEn != seedSt.labelCs);
+          return corrupt
               ? stored.copyWith(labelEn: seedSt.labelEn)
               : stored;
         }).toList();
