@@ -341,17 +341,14 @@ class _CountdownTapperState extends State<_CountdownTapper>
               height: 230,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: LinearGradient(
+                gradient: const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    widget.accent.withValues(alpha: 0.85),
-                    widget.accent,
-                  ],
+                  colors: Spectrum.sweep,
                 ),
                 boxShadow: [
                   BoxShadow(
-                      color: widget.accent.withValues(alpha: 0.35),
+                      color: Spectrum.coral.withValues(alpha: 0.35),
                       blurRadius: 30,
                       offset: const Offset(0, 12)),
                 ],
@@ -423,10 +420,10 @@ class _CountdownPreview extends StatelessWidget {
       height: 230,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [accent.withValues(alpha: 0.85), accent]),
+            colors: Spectrum.sweep),
       ),
       alignment: Alignment.center,
       child: Text('$count',

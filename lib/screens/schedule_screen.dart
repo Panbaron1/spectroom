@@ -84,7 +84,41 @@ class ScheduleScreen extends StatelessWidget {
       initialTime: TimeOfDay.now(),
       builder: (ctx, child) => MediaQuery(
         data: MediaQuery.of(ctx).copyWith(alwaysUse24HourFormat: true),
-        child: child!,
+        child: Theme(
+          data: Theme.of(ctx).copyWith(
+            colorScheme: Theme.of(ctx).colorScheme.copyWith(
+              primary: Spectrum.coral,
+              onPrimary: Colors.white,
+              surface: Spectrum.surface,
+              onSurface: Spectrum.ink,
+              surfaceContainerHighest: Spectrum.bg,
+              onSurfaceVariant: Spectrum.inkSoft,
+            ),
+            timePickerTheme: TimePickerThemeData(
+              backgroundColor: Spectrum.surface,
+              dialBackgroundColor: Spectrum.bg,
+              dialHandColor: Spectrum.coral,
+              dialTextColor: WidgetStateColor.resolveWith((states) =>
+                states.contains(WidgetState.selected)
+                    ? Colors.white
+                    : Spectrum.ink),
+              hourMinuteColor: WidgetStateColor.resolveWith((states) =>
+                states.contains(WidgetState.selected)
+                    ? Spectrum.coral.withValues(alpha: 0.15)
+                    : Spectrum.bg),
+              hourMinuteTextColor: WidgetStateColor.resolveWith((states) =>
+                states.contains(WidgetState.selected)
+                    ? Spectrum.coral
+                    : Spectrum.ink),
+              entryModeIconColor: Spectrum.inkSoft,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(Radii.lg)),
+              hourMinuteShape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(Radii.sm)),
+            ),
+          ),
+          child: child!,
+        ),
       ),
     );
     if (time == null || !context.mounted) return;
