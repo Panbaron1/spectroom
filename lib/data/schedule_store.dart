@@ -90,10 +90,10 @@ class ScheduleStore extends ChangeNotifier {
   }
 
   Future<void> remove(String id) async {
-    await NotificationService.instance.cancel(NotificationService.instance.notifId(id));
     _entries.removeWhere((e) => e.id == id);
     await _save();
     notifyListeners();
+    await NotificationService.instance.cancel(NotificationService.instance.notifId(id));
   }
 
   Future<void> toggle(String id) async {
@@ -102,13 +102,13 @@ class ScheduleStore extends ChangeNotifier {
     final updated = _entries[i].copyWith(enabled: !_entries[i].enabled);
     _entries[i] = updated;
     await _save();
+    notifyListeners();
     if (updated.enabled) {
       await _scheduleEntry(updated);
     } else {
       await NotificationService.instance
           .cancel(NotificationService.instance.notifId(id));
     }
-    notifyListeners();
   }
 
   Future<void> rescheduleAll() async {
