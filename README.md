@@ -1,17 +1,38 @@
-# spectroom
+# Spectroom
 
-A new Flutter project.
+Visual routine and social story app for children with atypical development. Built for parents, used on Android.
 
-## Getting Started
+## What it does
 
-This project is a starting point for a Flutter application.
+- **Step-by-step visual schedules** with pictures and voice recordings
+- **Rehearsal mode** — preview the routine before doing it
+- **Live guided mode** — step through with a timer and celebration at the end
+- **Builder** — create fully custom routines with your own photos and audio
+- **Daily reminders** — scheduled notifications to start routines at the right time
+- **Bilingual** — English and Czech
 
-A few resources to get you started if this is your first Flutter project:
+## Seeded routines
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+Brushing teeth · Haircut · Dentist · Clip nails · Bath time · Bedtime · Vaccination · Wash hands · Meal time · Potty
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Stack
+
+Flutter 3.44 · Dart 3.12 · Android · `flutter_local_notifications` · `audioplayers` · `record`
+
+## Build
+
+```bash
+flutter build appbundle --release
+```
+
+Requires `android/key.properties` and `android/spectroom-release.keystore` (not in repo).
+
+## Privacy
+
+Privacy policy: https://panbaron1.github.io/spectroom-legal/privacy-policy
+
+All data stored on-device. No analytics, no accounts, no network requests.
+
+## License
+
+MIT
