@@ -210,6 +210,8 @@ class _StepView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lang = LangStore.instance.lang;
+    final screenH = MediaQuery.of(context).size.height;
+    final pictoSize = (screenH * 0.32).clamp(160.0, 400.0);
     final label = Text(
       step.label(lang),
       textAlign: TextAlign.center,
@@ -220,7 +222,7 @@ class _StepView extends StatelessWidget {
     Widget hero;
     switch (step.kind) {
       case StepKind.info:
-        hero = _PictoHero(ref: step.pictogram);
+        hero = _PictoHero(ref: step.pictogram, size: pictoSize);
         break;
       case StepKind.countdown:
         hero = live
@@ -238,7 +240,7 @@ class _StepView extends StatelessWidget {
         hero = Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _PictoHero(ref: step.pictogram, size: 100),
+            _PictoHero(ref: step.pictogram, size: (pictoSize * 0.55).clamp(90.0, 200.0)),
             const SizedBox(height: 20),
             timerWidget,
           ],

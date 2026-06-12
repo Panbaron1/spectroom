@@ -249,8 +249,12 @@ class _ChallengeCardState extends State<_ChallengeCard> {
               children: [
                 Expanded(
                   child: Center(
-                    child: PictogramTile(challenge.cover,
-                        size: 112, tint: tint),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final size = (constraints.maxWidth * 0.62).clamp(80.0, 180.0);
+                        return PictogramTile(challenge.cover, size: size, tint: tint);
+                      },
+                    ),
                   ),
                 ),
                 const SizedBox(height: 10),
