@@ -33,6 +33,12 @@ Privacy policy: https://panbaron1.github.io/spectroom-legal/privacy-policy
 
 All data stored on-device. No analytics, no accounts, no network requests.
 
+## Docs
+
+- [Architecture](docs/architecture.md)
+- [Adding seed challenges](docs/adding-seeds.md)
+- [Building and releasing](docs/building-and-releasing.md)
+
 ## License
 
 MIT
