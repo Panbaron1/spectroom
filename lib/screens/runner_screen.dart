@@ -210,8 +210,19 @@ class _StepView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lang = LangStore.instance.lang;
-    final screenH = MediaQuery.of(context).size.height;
-    final pictoSize = (screenH * 0.32).clamp(160.0, 400.0);
+    final mq = MediaQuery.of(context);
+    final isLandscape = mq.orientation == Orientation.landscape;
+    final screenH = mq.size.height;
+    final pictoSize = isLandscape
+        ? (screenH * 0.24).clamp(90.0, 200.0)
+        : (screenH * 0.32).clamp(160.0, 400.0);
+    final ringSize = isLandscape
+        ? (screenH * 0.28).clamp(120.0, 200.0)
+        : 280.0;
+    final countdownSize = isLandscape
+        ? (screenH * 0.26).clamp(110.0, 190.0)
+        : 230.0;
+    final edgePad = isLandscape ? 10.0 : 24.0;
     final label = Text(
       step.label(lang),
       textAlign: TextAlign.center,
@@ -227,21 +238,26 @@ class _StepView extends StatelessWidget {
       case StepKind.countdown:
         hero = live
             ? _CountdownTapper(
-                start: step.count ?? 1, accent: accent, onDone: onComplete)
-            : _CountdownPreview(count: step.count ?? 1, accent: accent);
+                start: step.count ?? 1, accent: accent, onDone: onComplete,
+                size: countdownSize)
+            : _CountdownPreview(count: step.count ?? 1, accent: accent,
+                size: countdownSize);
         break;
       case StepKind.timer:
+        final timerPictoSize = (pictoSize * 0.55).clamp(70.0, 150.0);
         final timerWidget = live
             ? _TimerRunner(
                 seconds: step.durationSec ?? 30,
                 accent: accent,
-                onDone: onComplete)
-            : _TimerPreview(seconds: step.durationSec ?? 30, accent: accent);
+                onDone: onComplete,
+                size: ringSize)
+            : _TimerPreview(seconds: step.durationSec ?? 30, accent: accent,
+                size: ringSize);
         hero = Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _PictoHero(ref: step.pictogram, size: (pictoSize * 0.55).clamp(90.0, 200.0)),
-            const SizedBox(height: 20),
+            _PictoHero(ref: step.pictogram, size: timerPictoSize),
+            SizedBox(height: isLandscape ? 8 : 20),
             timerWidget,
           ],
         );
@@ -249,14 +265,14 @@ class _StepView extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.symmetric(horizontal: edgePad, vertical: edgePad),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Expanded(child: Center(child: hero)),
-          const SizedBox(height: 24),
+          SizedBox(height: isLandscape ? 8 : 24),
           label,
-          const SizedBox(height: 16),
+          SizedBox(height: isLandscape ? 6 : 16),
         ],
       ),
     );
@@ -293,8 +309,10 @@ class _CountdownTapper extends StatefulWidget {
   final int start;
   final Color accent;
   final VoidCallback onDone;
+  final double size;
   const _CountdownTapper(
-      {required this.start, required this.accent, required this.onDone});
+      {required this.start, required this.accent, required this.onDone,
+      this.size = 230});
 
   @override
   State<_CountdownTapper> createState() => _CountdownTapperState();
@@ -339,8 +357,8 @@ class _CountdownTapperState extends State<_CountdownTapper>
               return Transform.scale(scale: s, child: child);
             },
             child: Container(
-              width: 230,
-              height: 230,
+              width: widget.size,
+              height: widget.size,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: const LinearGradient(
@@ -414,12 +432,14 @@ class _Pips extends StatelessWidget {
 class _CountdownPreview extends StatelessWidget {
   final int count;
   final Color accent;
-  const _CountdownPreview({required this.count, required this.accent});
+  final double size;
+  const _CountdownPreview({required this.count, required this.accent,
+      this.size = 230});
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 230,
-      height: 230,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: const LinearGradient(
@@ -440,8 +460,10 @@ class _TimerRunner extends StatefulWidget {
   final int seconds;
   final Color accent;
   final VoidCallback onDone;
+  final double size;
   const _TimerRunner(
-      {required this.seconds, required this.accent, required this.onDone});
+      {required this.seconds, required this.accent, required this.onDone,
+      this.size = 280});
 
   @override
   State<_TimerRunner> createState() => _TimerRunnerState();
@@ -503,18 +525,20 @@ class _TimerRunnerState extends State<_TimerRunner>
                 ? 1 + 0.015 * math.sin(_breath.value * math.pi * 2)
                 : 1.0;
             final rotation = _running ? _ring.value * 0.6 : 0.0;
+            final sz = widget.size;
+            final innerSz = sz * (240 / 280);
             return Transform.scale(
               scale: breathe,
               child: SizedBox(
-                width: 280,
-                height: 280,
+                width: sz,
+                height: sz,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
                     // soft spectrum glow that fades as time drains
                     Container(
-                      width: 240,
-                      height: 240,
+                      width: innerSz,
+                      height: innerSz,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         gradient: RadialGradient(colors: [
@@ -525,7 +549,7 @@ class _TimerRunnerState extends State<_TimerRunner>
                       ),
                     ),
                     CustomPaint(
-                      size: const Size(280, 280),
+                      size: Size(sz, sz),
                       painter: _SpectrumRingPainter(
                           progress: remaining, rotation: rotation),
                     ),
@@ -606,14 +630,16 @@ class _SpectrumRingPainter extends CustomPainter {
 class _TimerPreview extends StatelessWidget {
   final int seconds;
   final Color accent;
-  const _TimerPreview({required this.seconds, required this.accent});
+  final double size;
+  const _TimerPreview({required this.seconds, required this.accent,
+      this.size = 280});
   @override
   Widget build(BuildContext context) {
     final m = seconds ~/ 60, s = seconds % 60;
     final txt = m > 0 ? '$m min${s > 0 ? ' $s s' : ''}' : '$s s';
     return SizedBox(
-      width: 280,
-      height: 280,
+      width: size,
+      height: size,
       child: CustomPaint(
         painter: _SpectrumRingPainter(progress: 1, rotation: 0),
         child: Center(
