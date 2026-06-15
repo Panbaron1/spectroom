@@ -218,10 +218,10 @@ class _StepView extends StatelessWidget {
         : (screenH * 0.32).clamp(160.0, 400.0);
     final ringSize = isLandscape
         ? (screenH * 0.28).clamp(120.0, 200.0)
-        : 280.0;
+        : (screenH * 0.26).clamp(150.0, 260.0);
     final countdownSize = isLandscape
         ? (screenH * 0.26).clamp(110.0, 190.0)
-        : 230.0;
+        : (screenH * 0.24).clamp(140.0, 230.0);
     final edgePad = isLandscape ? 10.0 : 24.0;
     final label = Text(
       step.label(lang),
@@ -244,7 +244,7 @@ class _StepView extends StatelessWidget {
                 size: countdownSize);
         break;
       case StepKind.timer:
-        final timerPictoSize = (pictoSize * 0.55).clamp(70.0, 150.0);
+        final timerPictoSize = (pictoSize * 0.55).clamp(70.0, 110.0);
         final timerWidget = live
             ? _TimerRunner(
                 seconds: step.durationSec ?? 30,
@@ -485,12 +485,6 @@ class _TimerRunnerState extends State<_TimerRunner>
     Prefs.timerDisplayMinSec().then((v) {
       if (mounted) setState(() => _displayMinSec = v);
     });
-  }
-
-  void _start() {
-    if (_running) return;
-    setState(() => _running = true);
-    _ring.forward();
     _ring.addStatusListener((s) {
       if (s == AnimationStatus.completed) {
         Future.delayed(const Duration(milliseconds: 400), () {
@@ -498,6 +492,13 @@ class _TimerRunnerState extends State<_TimerRunner>
         });
       }
     });
+  }
+
+  void _start() {
+    if (_running) return;
+    HapticFeedback.heavyImpact();
+    setState(() => _running = true);
+    _ring.forward();
   }
 
   @override
