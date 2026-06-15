@@ -269,7 +269,7 @@ class _StepView extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Expanded(child: Center(child: hero)),
+          Expanded(child: Center(child: FittedBox(fit: BoxFit.scaleDown, child: hero))),
           SizedBox(height: isLandscape ? 8 : 24),
           label,
           SizedBox(height: isLandscape ? 6 : 16),
