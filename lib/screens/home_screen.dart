@@ -18,7 +18,7 @@ import 'runner_screen.dart';
 import 'schedule_screen.dart';
 
 /// Library of challenges. Tap a card → pick Rehearsal or Live. FAB → build your
-/// own. Long-press a parent-made card → edit/delete.
+/// own. Long-press any card → edit (built-in or custom).
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -111,6 +111,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             MaterialPageRoute(
                                 builder: (_) => const ScheduleScreen()),
                           ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.help_outline_rounded),
+                          color: Spectrum.inkSoft,
+                          onPressed: () => _showHelp(context),
                         ),
                         IconButton(
                           icon: const Icon(Icons.settings_rounded),
@@ -239,9 +244,7 @@ class _ChallengeCardState extends State<_ChallengeCard> {
         child: InkWell(
           borderRadius: BorderRadius.circular(Radii.lg),
           onTap: () => _pickMode(context, challenge),
-          onLongPress: challenge.builtIn
-              ? null
-              : () => _openBuilder(context, challenge),
+          onLongPress: () => _openBuilder(context, challenge),
           child: Padding(
             padding: const EdgeInsets.all(14),
             child: Column(
@@ -370,6 +373,22 @@ void _showSettings(BuildContext context) {
         borderRadius:
             BorderRadius.vertical(top: Radius.circular(Radii.lg))),
     builder: (_) => const _SettingsSheet(),
+  );
+}
+
+void _showHelp(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    showDragHandle: true,
+    backgroundColor: Spectrum.surface,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(Radii.lg))),
+    builder: (_) => AnimatedBuilder(
+      animation: LangStore.instance,
+      builder: (_, _) => _HelpSheet(lang: LangStore.instance.lang),
+    ),
   );
 }
 
@@ -894,7 +913,6 @@ class _SettingsSheetState extends State<_SettingsSheet> {
             _SettingsCard(
               child: Column(
                 children: [
-                  _HowItWorksRow(lang: lang),
                   Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: Gap.md, vertical: 14),
@@ -1254,26 +1272,20 @@ class _ActionRow extends StatelessWidget {
   }
 }
 
-class _HowItWorksRow extends StatefulWidget {
+class _HelpSheet extends StatelessWidget {
   final String lang;
-  const _HowItWorksRow({required this.lang});
-
-  @override
-  State<_HowItWorksRow> createState() => _HowItWorksRowState();
-}
-
-class _HowItWorksRowState extends State<_HowItWorksRow> {
-  bool _expanded = false;
+  const _HelpSheet({required this.lang});
 
   @override
   Widget build(BuildContext context) {
-    final cs = widget.lang == 'cs';
+    final cs = lang == 'cs';
     final description = cs
         ? 'Aplikace pro vizuální přípravu dětí na rutiny a nové situace.'
         : 'Visual preparation app for children facing routines and new situations.';
     final bullets = cs
         ? [
             'Obsahuje 16 předpřipravených výzev: zuby, oblékání, koupání, snídaně, spánek, hřiště, doktor, očkování, kadeřník, nehty, zklidnění, léky a další.',
+            'Předpřipravené výzvy lze upravit — podržte prst na kartě výzvy a otevře se editor.',
             'Každou výzvu si lze nejdřív prohlédnout krok za krokem — bez stresu, jen jako přípravu.',
             'V živém režimu provede dítě celou rutinou obrázek za obrázkem, se zvukem a animací.',
             'Kroky mohou být: obrázková karta (informace), odpočet čísel nebo vizuální časovač s kruhovým průběhem.',
@@ -1289,6 +1301,7 @@ class _HowItWorksRowState extends State<_HowItWorksRow> {
           ]
         : [
             'Includes 16 built-in challenges: teeth, getting dressed, bath, breakfast, bedtime, playground, doctor, vaccination, haircut, nails, calm-down, medicine, and more.',
+            'Built-in challenges can be edited — long-press a challenge card to open the editor.',
             'Any challenge can be previewed step-by-step first — no pressure, just calm preparation.',
             'In live mode the app guides your child picture by picture, with sound and animation.',
             'Steps can be: picture card (information), number countdown, or a visual timer with circular progress.',
@@ -1303,83 +1316,52 @@ class _HowItWorksRowState extends State<_HowItWorksRow> {
             'Daily reminders: set a time, pick a challenge, and the app sends a notification every day — bell icon in the home screen.',
           ];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        InkWell(
-          onTap: () => setState(() => _expanded = !_expanded),
-          child: Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: Gap.md, vertical: 14),
-            child: Row(
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: Spectrum.sky.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(Icons.help_outline_rounded,
-                      size: 20, color: Spectrum.sky),
-                ),
-                const SizedBox(width: Gap.sm),
-                Expanded(
-                  child: Column(
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(Gap.lg, 0, Gap.lg, Gap.lg),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Text(
+                cs ? 'Jak to funguje' : 'How it works',
+                style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.3),
+              ),
+            ),
+            const SizedBox(height: Gap.sm),
+            Text(description,
+                style: const TextStyle(
+                    fontSize: 14, height: 1.4, color: Spectrum.inkSoft)),
+            const SizedBox(height: Gap.lg),
+            ...bullets.map((b) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(cs ? 'Jak to funguje' : 'How it works',
-                          style: const TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.w600)),
-                      Text(description,
-                          style: const TextStyle(
-                              fontSize: 12, color: Spectrum.inkSoft)),
+                      Container(
+                        margin: const EdgeInsets.only(top: 6, right: 10),
+                        width: 5,
+                        height: 5,
+                        decoration: const BoxDecoration(
+                            color: Spectrum.mint, shape: BoxShape.circle),
+                      ),
+                      Expanded(
+                        child: Text(b,
+                            style: const TextStyle(
+                                fontSize: 13.5,
+                                height: 1.5,
+                                color: Spectrum.inkSoft)),
+                      ),
                     ],
                   ),
-                ),
-                Icon(
-                  _expanded
-                      ? Icons.expand_less_rounded
-                      : Icons.expand_more_rounded,
-                  size: 20,
-                  color: Spectrum.inkSoft.withValues(alpha: 0.5),
-                ),
-              ],
-            ),
-          ),
+                )),
+          ],
         ),
-        if (_expanded)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(Gap.md, 0, Gap.md, Gap.md),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: bullets
-                  .map((b) => Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              margin: const EdgeInsets.only(top: 6, right: 8),
-                              width: 5,
-                              height: 5,
-                              decoration: const BoxDecoration(
-                                  color: Spectrum.mint, shape: BoxShape.circle),
-                            ),
-                            Expanded(
-                              child: Text(b,
-                                  style: const TextStyle(
-                                      fontSize: 13,
-                                      height: 1.5,
-                                      color: Spectrum.inkSoft)),
-                            ),
-                          ],
-                        ),
-                      ))
-                  .toList(),
-            ),
-          ),
-      ],
+      ),
     );
   }
 }
