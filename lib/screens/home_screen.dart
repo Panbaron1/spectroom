@@ -424,8 +424,6 @@ class _SettingsSheet extends StatefulWidget {
 }
 
 class _SettingsSheetState extends State<_SettingsSheet> {
-  int _timerSec = 300;
-  int _countdownN = 10;
   bool _timerDisplayMinSec = true;
   bool _loaded = false;
   bool _exporting = false;
@@ -438,19 +436,15 @@ class _SettingsSheetState extends State<_SettingsSheet> {
     super.initState();
     _vocativeCtrl = TextEditingController();
     Future.wait([
-      Prefs.standaloneTimerSec(),
-      Prefs.standaloneCountdownN(),
       Prefs.kidVocative(),
       Prefs.timerDisplayMinSec(),
       Prefs.builderPin(),
     ]).then((vals) {
       if (mounted) {
         setState(() {
-          _timerSec = vals[0] as int;
-          _countdownN = vals[1] as int;
-          _vocativeCtrl.text = vals[2] as String;
-          _timerDisplayMinSec = vals[3] as bool;
-          _builderPin = vals[4] as String?;
+          _vocativeCtrl.text = vals[0] as String;
+          _timerDisplayMinSec = vals[1] as bool;
+          _builderPin = vals[2] as String?;
           _loaded = true;
         });
       }
@@ -464,74 +458,6 @@ class _SettingsSheetState extends State<_SettingsSheet> {
   }
 
   String get _lang => LangStore.instance.lang;
-
-  void _adjustTimer(int deltaSec) {
-    final v = (_timerSec + deltaSec).clamp(30, 30 * 60);
-    setState(() => _timerSec = v);
-    Prefs.setStandaloneTimerSec(v);
-  }
-
-  void _adjustCountdown(int delta) {
-    final v = (_countdownN + delta).clamp(2, 100);
-    setState(() => _countdownN = v);
-    Prefs.setStandaloneCountdownN(v);
-  }
-
-  void _startTimer(BuildContext ctx) {
-    final sec = _timerSec;
-    final nav = Navigator.of(ctx);
-    nav.pop();
-    nav.push(MaterialPageRoute(
-      builder: (_) => RunnerScreen(
-        live: true,
-        challenge: Challenge(
-          id: 'standalone.timer',
-          titleCs: 'Časovač',
-          titleEn: 'Timer',
-          category: ChallengeCategory.routine,
-          cover: const PictogramRef.asset('finish'),
-          steps: [
-            ChallengeStep(
-              id: 'st.step',
-              kind: StepKind.timer,
-              pictogram: const PictogramRef.asset('finish'),
-              labelCs: 'Jdeme na to',
-              labelEn: 'Go',
-              durationSec: sec,
-            ),
-          ],
-        ),
-      ),
-    ));
-  }
-
-  void _startCountdown(BuildContext ctx) {
-    final n = _countdownN;
-    final nav = Navigator.of(ctx);
-    nav.pop();
-    nav.push(MaterialPageRoute(
-      builder: (_) => RunnerScreen(
-        live: true,
-        challenge: Challenge(
-          id: 'standalone.countdown',
-          titleCs: 'Odpočet',
-          titleEn: 'Countdown',
-          category: ChallengeCategory.hygiene,
-          cover: const PictogramRef.asset('star'),
-          steps: [
-            ChallengeStep(
-              id: 'sc.step',
-              kind: StepKind.countdown,
-              pictogram: const PictogramRef.asset('star'),
-              labelCs: 'Odpočítáváme!',
-              labelEn: 'Counting down!',
-              count: n,
-            ),
-          ],
-        ),
-      ),
-    ));
-  }
 
   Future<void> _doExport(BuildContext ctx) async {
     setState(() => _exporting = true);
@@ -634,8 +560,6 @@ class _SettingsSheetState extends State<_SettingsSheet> {
           child: Center(child: CircularProgressIndicator()));
     }
     final lang = _lang;
-    final mm = _timerSec ~/ 60;
-    final ss = _timerSec % 60;
     return SafeArea(
       child: SingleChildScrollView(
         padding: EdgeInsets.fromLTRB(
@@ -655,125 +579,6 @@ class _SettingsSheetState extends State<_SettingsSheet> {
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.3),
               ),
-            ),
-            const SizedBox(height: Gap.lg),
-
-            // ── Quick tools ──────────────────────────────────────
-            _RunnerCard(
-              color: Spectrum.mint,
-              icon: Icons.timer_rounded,
-              title: lang == 'en' ? 'Timer' : 'Časovač',
-              display:
-                  '${mm.toString().padLeft(2, '0')}:${ss.toString().padLeft(2, '0')}',
-              onMinus: () => _adjustTimer(-60),
-              onPlus: () => _adjustTimer(60),
-              minusLabel: '−1 min',
-              plusLabel: '+1 min',
-              onStart: () => _startTimer(context),
-              startLabel: lang == 'en' ? 'Start' : 'Spustit',
-            ),
-            const SizedBox(height: Gap.sm),
-            _RunnerCard(
-              color: Spectrum.amber,
-              icon: Icons.pin_rounded,
-              title: lang == 'en' ? 'Countdown' : 'Odpočet',
-              display: '$_countdownN',
-              onMinus: () => _adjustCountdown(-1),
-              onPlus: () => _adjustCountdown(1),
-              minusLabel: '−1',
-              plusLabel: '+1',
-              onStart: () => _startCountdown(context),
-              startLabel: lang == 'en' ? 'Start' : 'Spustit',
-            ),
-            const SizedBox(height: Gap.lg),
-
-            // ── Timer display ────────────────────────────────────
-            _SectionLabel(lang == 'en' ? 'TIMER DISPLAY' : 'ZOBRAZENÍ ČASU'),
-            const SizedBox(height: 8),
-            _SettingsCard(
-              child: Padding(
-                padding: const EdgeInsets.all(Gap.md),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      lang == 'en'
-                          ? 'Show remaining time as'
-                          : 'Zobrazit zbývající čas jako',
-                      style: const TextStyle(
-                          fontSize: 13, color: Spectrum.inkSoft),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _ToggleChip(
-                            label: '2:30',
-                            sublabel: lang == 'en' ? 'min:sec' : 'min:sek',
-                            color: Spectrum.mint,
-                            selected: _timerDisplayMinSec,
-                            onTap: () {
-                              setState(() => _timerDisplayMinSec = true);
-                              Prefs.setTimerDisplayMinSec(true);
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: _ToggleChip(
-                            label: '150',
-                            sublabel: lang == 'en' ? 'seconds' : 'sekundy',
-                            color: Spectrum.sky,
-                            selected: !_timerDisplayMinSec,
-                            onTap: () {
-                              setState(() => _timerDisplayMinSec = false);
-                              Prefs.setTimerDisplayMinSec(false);
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: Gap.lg),
-
-            // ── Language ─────────────────────────────────────────
-            _SectionLabel(lang == 'en' ? 'LANGUAGE' : 'JAZYK'),
-            const SizedBox(height: 8),
-            AnimatedBuilder(
-              animation: LangStore.instance,
-              builder: (context, _) {
-                final cur = LangStore.instance.lang;
-                return Column(
-                  children: [
-                    _SettingsLangTile(
-                      code: 'CS',
-                      label: 'Čeština',
-                      sublabel: 'Česky',
-                      accent: Spectrum.coral,
-                      selected: cur == 'cs',
-                      onTap: () {
-                        LangStore.instance.setLang('cs');
-                        setState(() {});
-                      },
-                    ),
-                    const SizedBox(height: 10),
-                    _SettingsLangTile(
-                      code: 'EN',
-                      label: 'English',
-                      sublabel: 'In English',
-                      accent: Spectrum.sky,
-                      selected: cur == 'en',
-                      onTap: () {
-                        LangStore.instance.setLang('en');
-                        setState(() {});
-                      },
-                    ),
-                  ],
-                );
-              },
             ),
             const SizedBox(height: Gap.lg),
 
@@ -825,6 +630,96 @@ class _SettingsSheetState extends State<_SettingsSheet> {
                               color: Spectrum.sky, width: 2),
                         ),
                       ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: Gap.lg),
+
+            // ── Language ─────────────────────────────────────────
+            _SectionLabel(lang == 'en' ? 'LANGUAGE' : 'JAZYK'),
+            const SizedBox(height: 8),
+            AnimatedBuilder(
+              animation: LangStore.instance,
+              builder: (context, _) {
+                final cur = LangStore.instance.lang;
+                return Column(
+                  children: [
+                    _SettingsLangTile(
+                      code: 'CS',
+                      label: 'Čeština',
+                      sublabel: 'Česky',
+                      accent: Spectrum.coral,
+                      selected: cur == 'cs',
+                      onTap: () {
+                        LangStore.instance.setLang('cs');
+                        setState(() {});
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    _SettingsLangTile(
+                      code: 'EN',
+                      label: 'English',
+                      sublabel: 'In English',
+                      accent: Spectrum.sky,
+                      selected: cur == 'en',
+                      onTap: () {
+                        LangStore.instance.setLang('en');
+                        setState(() {});
+                      },
+                    ),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(height: Gap.lg),
+
+            // ── Timer display ────────────────────────────────────
+            _SectionLabel(lang == 'en' ? 'TIMER DISPLAY' : 'ZOBRAZENÍ ČASU'),
+            const SizedBox(height: 8),
+            _SettingsCard(
+              child: Padding(
+                padding: const EdgeInsets.all(Gap.md),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      lang == 'en'
+                          ? 'Show remaining time as'
+                          : 'Zobrazit zbývající čas jako',
+                      style: const TextStyle(
+                          fontSize: 13, color: Spectrum.inkSoft),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _ToggleChip(
+                            label: '2:30',
+                            sublabel: lang == 'en' ? 'min:sec' : 'min:sek',
+                            color: Spectrum.mint,
+                            selected: _timerDisplayMinSec,
+                            onTap: () {
+                              setState(() => _timerDisplayMinSec = true);
+                              Prefs.setTimerDisplayMinSec(true);
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _ToggleChip(
+                            label: '150',
+                            sublabel: lang == 'en' ? 'seconds' : 'sekundy',
+                            color: Spectrum.sky,
+                            selected: !_timerDisplayMinSec,
+                            onTap: () {
+                              setState(() => _timerDisplayMinSec = false);
+                              Prefs.setTimerDisplayMinSec(false);
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -956,170 +851,6 @@ class _SettingsSheetState extends State<_SettingsSheet> {
   }
 }
 
-// ── Runner card (timer / countdown) ─────────────────────────
-
-class _RunnerCard extends StatelessWidget {
-  final Color color;
-  final IconData icon;
-  final String title;
-  final String display;
-  final VoidCallback onMinus;
-  final VoidCallback onPlus;
-  final String minusLabel;
-  final String plusLabel;
-  final VoidCallback onStart;
-  final String startLabel;
-
-  const _RunnerCard({
-    required this.color,
-    required this.icon,
-    required this.title,
-    required this.display,
-    required this.onMinus,
-    required this.onPlus,
-    required this.minusLabel,
-    required this.plusLabel,
-    required this.onStart,
-    required this.startLabel,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final tint = Spectrum.tint(color, 0.84);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Spectrum.surface,
-        borderRadius: BorderRadius.circular(Radii.lg),
-        boxShadow: [
-          BoxShadow(
-              color: color.withValues(alpha: 0.15),
-              blurRadius: 20,
-              offset: const Offset(0, 8)),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Header stripe
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(
-                horizontal: Gap.md, vertical: Gap.sm),
-            decoration: BoxDecoration(
-              color: tint,
-              borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(Radii.lg)),
-            ),
-            child: Row(
-              children: [
-                Icon(icon, size: 18, color: color),
-                const SizedBox(width: 6),
-                Text(title,
-                    style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: color)),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-                Gap.md, Gap.md, Gap.md, Gap.md),
-            child: Column(
-              children: [
-                // Big display
-                Text(
-                  display,
-                  style: TextStyle(
-                      fontSize: 56,
-                      fontWeight: FontWeight.w200,
-                      letterSpacing: -2,
-                      color: color,
-                      fontFamily: 'Geist'),
-                ),
-                const SizedBox(height: Gap.sm),
-                // − / + row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _AdjustBtn(
-                        label: minusLabel,
-                        color: color,
-                        onTap: onMinus),
-                    const SizedBox(width: Gap.md),
-                    _AdjustBtn(
-                        label: plusLabel,
-                        color: color,
-                        onTap: onPlus),
-                  ],
-                ),
-                const SizedBox(height: Gap.md),
-                // Start button
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: onStart,
-                    icon: const Icon(Icons.play_arrow_rounded),
-                    label: Text(startLabel),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: color,
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size.fromHeight(52),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AdjustBtn extends StatelessWidget {
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
-  const _AdjustBtn(
-      {required this.label,
-      required this.color,
-      required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-            horizontal: Gap.md, vertical: Gap.sm),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(Radii.sm),
-        ),
-        child: Text(label,
-            style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: color)),
-      ),
-    );
-  }
-}
-
-class _SheetLabel extends StatelessWidget {
-  final String text;
-  const _SheetLabel(this.text);
-
-  @override
-  Widget build(BuildContext context) => Text(
-        text,
-        style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.6,
-            color: Spectrum.inkSoft),
-      );
-}
 
 class _SectionLabel extends StatelessWidget {
   final String text;

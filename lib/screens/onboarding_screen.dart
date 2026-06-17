@@ -47,6 +47,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       bodyCs: 'V živém režimu vás appka provede krok za krokem. Odpočítávání a klidný časovač pomůžou dítěti zvládnout to skoro samo.',
       bodyEn: 'In live mode the app guides you step by step. Countdown and calm timer help your child get through it almost on their own.',
     ),
+    _Page(
+      symbol: 'star',
+      accent: Spectrum.sky,
+      titleCs: 'Tipy navíc',
+      titleEn: 'Pro tips',
+      tipsCs: [
+        'Předpřipravené výzvy lze upravit — podržte prst na kartě výzvy a otevře se editor. Přizpůsobte je svému dítěti.',
+        'Do přípravných kroků přidejte fotku dítěte (klidně i AI obrázek), jak je klidné a spokojené v dané situaci. Když se vidí, jak to zvládá, příprava má největší efekt.',
+      ],
+      tipsEn: [
+        'Built-in challenges can be edited — long-press a challenge card to open the editor and tailor it to your child.',
+        'In training steps, add a photo of your child (an AI-generated one works too) looking calm and happy in the hard situation. When they see themselves cope, the preparation has the greatest effect.',
+      ],
+    ),
   ];
 
   Future<void> _finish() async {
@@ -347,15 +361,19 @@ class _LangTile extends StatelessWidget {
 // ── Intro page ───────────────────────────────────────────────
 
 class _Page {
-  final String symbol, titleCs, titleEn, bodyCs, bodyEn;
+  final String symbol, titleCs, titleEn;
+  final String? bodyCs, bodyEn;
+  final List<String>? tipsCs, tipsEn;
   final Color accent;
   const _Page({
     required this.symbol,
     required this.accent,
     required this.titleCs,
     required this.titleEn,
-    required this.bodyCs,
-    required this.bodyEn,
+    this.bodyCs,
+    this.bodyEn,
+    this.tipsCs,
+    this.tipsEn,
   });
 }
 
@@ -366,14 +384,23 @@ class _PageView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
+    final tips = lang == 'en' ? page.tipsEn : page.tipsCs;
+    final hasTips = tips != null;
+    final heroSize = hasTips ? 132.0 : 200.0;
+    final pictoSize = hasTips ? 76.0 : 116.0;
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        physics: const ClampingScrollPhysics(),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
           Container(
-            width: 200,
-            height: 200,
+            width: heroSize,
+            height: heroSize,
             decoration: BoxDecoration(
               color: Spectrum.surface,
               shape: BoxShape.circle,
@@ -385,14 +412,14 @@ class _PageView extends StatelessWidget {
               ],
             ),
             child: Center(
-              child: PictogramView(PictogramRef.asset(page.symbol), size: 116),
+              child: PictogramView(PictogramRef.asset(page.symbol), size: pictoSize),
             ),
           ).animate().scale(
               begin: const Offset(0.85, 0.85),
               end: const Offset(1, 1),
               duration: 450.ms,
               curve: Curves.easeOutBack),
-          const SizedBox(height: 48),
+          SizedBox(height: hasTips ? 28 : 48),
           Text(lang == 'en' ? page.titleEn : page.titleCs,
               textAlign: TextAlign.center,
               style: const TextStyle(
@@ -402,12 +429,78 @@ class _PageView extends StatelessWidget {
                   letterSpacing: -0.5,
                   color: Spectrum.ink))
               .animate().fadeIn(delay: 100.ms, duration: 350.ms).slideY(begin: 0.1, end: 0),
-          const SizedBox(height: 16),
-          Text(lang == 'en' ? page.bodyEn : page.bodyCs,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                  fontSize: 16.5, height: 1.6, color: Spectrum.inkSoft))
-              .animate().fadeIn(delay: 200.ms, duration: 350.ms),
+          const SizedBox(height: 20),
+          if (hasTips)
+            ...List.generate(tips.length, (i) => Padding(
+                  padding: EdgeInsets.only(bottom: i == tips.length - 1 ? 0 : 14),
+                  child: _TipCard(
+                    number: i + 1,
+                    text: tips[i],
+                    accent: page.accent,
+                  ).animate().fadeIn(
+                      delay: (180 + i * 140).ms, duration: 350.ms)
+                      .slideY(begin: 0.12, end: 0),
+                ))
+          else
+            Text(lang == 'en' ? page.bodyEn! : page.bodyCs!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    fontSize: 16.5, height: 1.6, color: Spectrum.inkSoft))
+                .animate().fadeIn(delay: 200.ms, duration: 350.ms),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TipCard extends StatelessWidget {
+  final int number;
+  final String text;
+  final Color accent;
+  const _TipCard(
+      {required this.number, required this.text, required this.accent});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Spectrum.surface,
+        borderRadius: BorderRadius.circular(Radii.lg),
+        boxShadow: [
+          BoxShadow(
+              color: Spectrum.ink.withValues(alpha: 0.05),
+              blurRadius: 14,
+              offset: const Offset(0, 5)),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
+              color: accent.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: Text('$number',
+                style: TextStyle(
+                    fontFamily: 'Geist',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: accent)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(text,
+                style: const TextStyle(
+                    fontSize: 14.5, height: 1.5, color: Spectrum.inkSoft)),
+          ),
         ],
       ),
     );

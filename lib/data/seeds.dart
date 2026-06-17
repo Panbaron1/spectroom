@@ -36,7 +36,7 @@ final List<Challenge> seedChallenges = [
   ),
   Challenge(
     id: 'seed.medicine',
-    titleCs: 'Brát lék',
+    titleCs: 'Podání léku',
     titleEn: 'Take medicine',
     category: ChallengeCategory.medical,
     cover: const PictogramRef.asset('medicine'),
