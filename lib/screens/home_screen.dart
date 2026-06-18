@@ -316,7 +316,9 @@ void _pickMode(BuildContext context, Challenge c) {
     backgroundColor: Spectrum.surface,
     shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(Radii.lg))),
+    isScrollControlled: true,
     builder: (ctx) => SafeArea(
+      child: SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(Gap.lg, 0, Gap.lg, Gap.lg),
         child: Column(
@@ -358,6 +360,7 @@ void _pickMode(BuildContext context, Challenge c) {
             ),
           ],
         ),
+      ),
       ),
     ),
   );

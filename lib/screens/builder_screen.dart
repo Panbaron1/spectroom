@@ -717,6 +717,7 @@ class _PictogramPicker extends StatelessWidget {
           borderRadius: BorderRadius.vertical(
               top: Radius.circular(Radii.lg))),
       builder: (ctx) => SafeArea(
+        child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -758,6 +759,7 @@ class _PictogramPicker extends StatelessWidget {
                 onTap: () =>
                     Navigator.pop(ctx, 'gallery')),
           ],
+        ),
         ),
       ),
     );
@@ -1179,6 +1181,7 @@ class _VoiceSheetState extends State<_VoiceSheet> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
+      child: SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 28),
         child: Column(
@@ -1279,6 +1282,7 @@ class _VoiceSheetState extends State<_VoiceSheet> {
             ],
           ],
         ),
+      ),
       ),
     );
   }

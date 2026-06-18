@@ -39,6 +39,19 @@ class SpectroomApp extends StatelessWidget {
       title: 'Spectroom',
       debugShowCheckedModeBanner: false,
       theme: buildSpectroomTheme(),
+      builder: (context, child) {
+        // Clamp the OS font-scale so large accessibility settings can't
+        // overflow fixed layouts. 1.0–1.3 keeps text readable but bounded.
+        final mq = MediaQuery.of(context);
+        final clamped = mq.textScaler.clamp(
+          minScaleFactor: 1.0,
+          maxScaleFactor: 1.3,
+        );
+        return MediaQuery(
+          data: mq.copyWith(textScaler: clamped),
+          child: child!,
+        );
+      },
       home: showOnboarding ? const OnboardingScreen() : const HomeScreen(),
     );
   }

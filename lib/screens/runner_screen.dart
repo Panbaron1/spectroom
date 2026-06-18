@@ -709,7 +709,8 @@ class _CelebrationState extends State<_Celebration>
               CustomPaint(painter: _ConfettiPainter(_confetti.value)),
         ),
         Center(
-          child: Column(
+          child: SingleChildScrollView(
+            child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ScaleTransition(
@@ -763,6 +764,7 @@ class _CelebrationState extends State<_Celebration>
                 child: Text(LangStore.instance.lang == 'en' ? 'Back' : 'Zpět'),
               ),
             ],
+          ),
           ),
         ),
       ],
