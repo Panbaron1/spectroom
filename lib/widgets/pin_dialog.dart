@@ -124,15 +124,19 @@ class _PinDialogState extends State<_PinDialog>
 
   @override
   Widget build(BuildContext context) {
+    final screenW = MediaQuery.sizeOf(context).width;
+    // Shrink the dialog on small screens so it never overflows the inset.
+    final dialogW = screenW < 336 ? screenW - 48 : 288.0;
     return Dialog(
       backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       child: AnimatedBuilder(
         animation: _shakeAnim,
         builder: (_, child) =>
             Transform.translate(offset: Offset(_shakeAnim.value, 0), child: child),
         child: Container(
-          width: 280,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+          width: dialogW,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
           decoration: BoxDecoration(
             color: Spectrum.surface,
             borderRadius: BorderRadius.circular(24),
@@ -236,14 +240,18 @@ class _Numpad extends StatelessWidget {
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: row.map((key) {
-              if (key.isEmpty) return const SizedBox(width: 72);
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: _Key(
-                  label: key,
-                  onTap: key == '⌫' ? onBackspace : () => onDigit(key),
+              // Each cell is an equal flex column; keys scale to dialog width.
+              return Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: key.isEmpty
+                      ? const SizedBox(height: 56)
+                      : _Key(
+                          label: key,
+                          onTap:
+                              key == '⌫' ? onBackspace : () => onDigit(key),
+                        ),
                 ),
               );
             }).toList(),
@@ -267,7 +275,7 @@ class _Key extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 80),
-        width: 64,
+        width: double.infinity,
         height: 56,
         decoration: BoxDecoration(
           color: _isBack ? Colors.transparent : Spectrum.surface,
