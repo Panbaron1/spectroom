@@ -4,6 +4,12 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Spectroom lets you record your own voice for a routine step, so your child hears a familiar voice.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Spectroom lets you take a photo to use as a picture for a routine step.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Spectroom lets you pick a photo from your library to use as a picture for a routine step.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
