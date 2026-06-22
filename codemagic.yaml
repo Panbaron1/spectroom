@@ -1,0 +1,86 @@
+# Codemagic CI/CD — builds Spectroom on a macOS runner and ships to TestFlight.
+#
+# ── ONE-TIME SETUP (in the Codemagic UI) before this works ──────────────────
+# 1. Join the Apple Developer Program ($99/yr) — required for TestFlight.
+# 2. In App Store Connect, create the app record with bundle id:
+#       com.spectroom.app
+# 3. Create an App Store Connect API key (Users and Access → Integrations → Keys,
+#    role: App Manager). Download the .p8.
+# 4. In Codemagic: Teams/App settings → Integrations → App Store Connect →
+#    add the key. Name the integration exactly:  Spectroom AppStore
+#    (matches `app_store_connect:` below — rename in both places if different).
+# 5. Add yourself + testers to a TestFlight internal/external group named:
+#       Testers
+#    (matches `submit_to_testflight` group below).
+#
+# After that, push to GitHub and start a build from the Codemagic UI (or wire a
+# trigger). Testers get the build in the TestFlight app — no Mac, no cables.
+# ─────────────────────────────────────────────────────────────────────────────
+
+workflows:
+  ios-testflight:
+    name: iOS — TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      app_store_connect: Spectroom AppStore
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.spectroom.app
+      vars:
+        APP_STORE_APPLE_ID: 0000000000   # replace with your numeric App Store Connect app id
+        BUNDLE_ID: "com.spectroom.app"
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Flutter packages
+        script: flutter pub get
+      - name: Install CocoaPods
+        script: |
+          find . -name "Podfile" -execdir pod install \;
+      - name: Set up signing
+        script: |
+          xcode-project use-profiles
+      - name: Flutter analyze
+        script: flutter analyze || true
+      - name: Build IPA
+        script: |
+          # Build number derived from Codemagic's incrementing $BUILD_NUMBER so
+          # each TestFlight upload is unique without manual bumping.
+          flutter build ipa --release \
+            --build-name=1.0.8 \
+            --build-number=$(($BUILD_NUMBER + 1)) \
+            --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - flutter_drive.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        beta_groups:
+          - Testers
+        # Leave submit_to_app_store off — TestFlight only, no public release.
+
+  # Optional: build the Android release bundle on CI too (no Mac needed for this,
+  # but handy to keep one source of truth). Produces an AAB artifact.
+  android-release:
+    name: Android — Release AAB
+    instance_type: linux_x2
+    max_build_duration: 45
+    environment:
+      flutter: stable
+      vars:
+        PACKAGE_NAME: "com.spectroom.app"
+    scripts:
+      - name: Flutter packages
+        script: flutter pub get
+      - name: Build AAB
+        script: |
+          flutter build appbundle --release \
+            --build-number=$(($BUILD_NUMBER + 1))
+    artifacts:
+      - build/app/outputs/bundle/release/*.aab
