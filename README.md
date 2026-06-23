@@ -2,6 +2,8 @@
 
 Visual routine and social story app for children with atypical development. Built for parents, used on Android.
 
+Repo: https://github.com/Panbaron1/spectroom
+
 ## What it does
 
 - **Step-by-step visual schedules** with pictures and voice recordings
