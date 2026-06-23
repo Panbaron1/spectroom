@@ -89,7 +89,7 @@ class _RunnerScreenState extends State<RunnerScreen> {
     final steps = widget.challenge.steps;
     return Scaffold(
       backgroundColor:
-          Color.alphaBlend(_tint.withValues(alpha: 0.55), Spectrum.bg),
+          Color.alphaBlend(_tint.withValues(alpha: 0.28), Spectrum.bg),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: Text(widget.challenge.title(LangStore.instance.lang)),

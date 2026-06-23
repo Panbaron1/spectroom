@@ -96,7 +96,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          const Positioned.fill(child: SpectrumMesh(intensity: 0.55)),
+          const Positioned.fill(child: SpectrumMesh(intensity: 0.3)),
           SafeArea(
             child: ContentBox(
               child: Column(
